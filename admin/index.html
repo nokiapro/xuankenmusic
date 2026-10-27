@@ -1,0 +1,3623 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link id="site-favicon" href="https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/icon.png" rel="shortcut icon" type="image/x-icon" />
+    <title>Admin | XuanKen Music</title>
+    <link rel="stylesheet" href="https://kit-pro.fontawesome.com/releases/v7.2.0/css/pro.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700;800&display=swap');
+        :root, html[data-theme="dark"] {
+            --bg: #0c0c10;
+            --card: #16161e;
+            --card2: #1c1c26;
+            --border: #2a2a38;
+            --text: #f2f2f5;
+            --muted: #8b8b9a;
+            --accent: #8c00ff;
+            --accent2: #ff0040;
+            --ok: #4ade80;
+            --warn: #ff9800;
+            --info: #60a5fa;
+            --danger: #ff6666;
+            --radius: 14px;
+            --touch: 44px;
+            --safe-b: env(safe-area-inset-bottom, 0px);
+            --safe-t: env(safe-area-inset-top, 0px);
+            --page-bg: linear-gradient(165deg, #0e0e14 0%, #16102a 45%, #0c0c10 100%);
+            --input-bg: #121218;
+            --calendar-icon: invert(1);
+            --color-scheme: dark;
+            --header-bg: rgba(12,12,16,0.92);
+        }
+        html[data-theme="light"] {
+            --bg: #f0f0f5;
+            --card: #ffffff;
+            --card2: #eef0f6;
+            --border: #c8cad4;
+            --text: #12121a;
+            --muted: #4a4a5c;
+            --accent: #7c3aed;
+            --accent2: #e11d48;
+            --ok: #15803d;
+            --warn: #c2410c;
+            --info: #1d4ed8;
+            --danger: #b91c1c;
+            --page-bg: linear-gradient(165deg, #f4f5fa 0%, #ebe4ff 45%, #f0f0f5 100%);
+            --input-bg: #ffffff;
+            --calendar-icon: invert(0);
+            --color-scheme: light;
+            --header-bg: rgba(255,255,255,0.96);
+        }
+        html[data-theme="light"] label,
+        html[data-theme="light"] .muted,
+        html[data-theme="light"] th {
+            color: var(--muted) !important;
+        }
+        html[data-theme="light"] input,
+        html[data-theme="light"] textarea,
+        html[data-theme="light"] select {
+            color: var(--text) !important;
+            background: var(--input-bg) !important;
+            border-color: var(--border) !important;
+        }
+        html[data-theme="light"] .card h2,
+        html[data-theme="light"] .card h3 {
+            color: var(--text);
+        }
+        html[data-theme="light"] code {
+            background: rgba(0,0,0,0.06);
+            color: var(--text);
+        }
+        html[data-theme="light"] .stat .n { color: var(--text); }
+        html[data-theme="light"] .stat .l { color: var(--muted); }
+        html[data-theme="light"] td { color: var(--text); }
+        html[data-theme="light"] .search {
+            background: var(--input-bg);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        html[data-theme="light"] .tab {
+            background: var(--card2);
+            color: var(--muted);
+        }
+        html[data-theme="light"] .pagination button {
+            background: var(--card2);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html {
+            -webkit-text-size-adjust: 100%;
+            background: var(--bg);
+            overscroll-behavior-y: none;
+        }
+        body {
+            color-scheme: var(--color-scheme);
+            font-family: "Roboto Condensed", system-ui, -apple-system, sans-serif;
+            background: var(--page-bg, linear-gradient(165deg, #0e0e14 0%, #16102a 45%, #0c0c10 100%));
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            line-height: 1.45;
+            padding-bottom: var(--safe-b);
+            overscroll-behavior-y: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        a { color: var(--info); }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.82em;
+            background: rgba(255,255,255,0.06);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px 16px calc(28px + var(--safe-b));
+        }
+        @media (min-width: 768px) {
+            .wrap { padding: 24px 24px 48px; }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg, rgba(12,12,16,0.92));
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 0;
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+            border-bottom: 1px solid transparent;
+        }
+        .header.scrolled { border-bottom-color: var(--border); }
+        .header h1 {
+            font-size: 1.15rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #ff0040, #8c00ff, #17adca);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        @media (min-width: 768px) {
+            .header {
+                margin-left: 0; margin-right: 0;
+                padding-left: 0; padding-right: 0;
+                position: relative;
+                background: transparent;
+                backdrop-filter: none;
+            }
+            .header h1 { font-size: 1.45rem; }
+        }
+
+        @media (max-width: 767px) {
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+            .header > div:first-child {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            #admin-identity {
+                justify-content: center;
+                text-align: center;
+            }
+            .header-actions {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+            }
+            .header-actions .btn {
+                flex: 1 1 0;
+                min-width: 0;
+                padding: 10px 8px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
+            .header-actions .btn-label {
+                display: inline;
+            }
+            .header h1 {
+                text-align: center;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 16px;
+            margin-bottom: 14px;
+        }
+        @media (min-width: 768px) {
+            .card { padding: 20px 20px; margin-bottom: 16px; }
+        }
+        .card h2 {
+            font-size: 0.8rem;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card h2::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, var(--accent2), var(--accent));
+            flex-shrink: 0;
+        }
+        .card h3 {
+            margin: 18px 0 10px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        @media (min-width: 480px) {
+            .grid-stats { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 768px) {
+            .grid-stats { grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        }
+        .stat {
+            background: var(--card2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .stat .n {
+            font-size: 1.25rem;
+            font-weight: 800;
+            word-break: break-all;
+            background: linear-gradient(135deg, #fff, #c4b5fd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .stat .l {
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        @media (min-width: 768px) {
+            .stat { text-align: center; padding: 14px; }
+            .stat .n { font-size: 1.45rem; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            flex: 1 0 auto;
+            min-height: var(--touch);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tab i { margin-right: 0; font-size: 0.9em; }
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(140,0,255,0.25);
+        }
+        @media (min-width: 768px) {
+            .tabs { gap: 8px; }
+            .tab { flex: 0 0 auto; padding: 10px 20px; }
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        input, textarea, select {
+            width: 100%;
+            background: var(--input-bg, #121218);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 16px;
+            min-height: var(--touch);
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(140,0,255,0.15);
+        }
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+            line-height: 1.4;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            min-height: 0;
+            accent-color: var(--warn);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        input[type="datetime-local"],
+        input[type="date"],
+        input[type="time"] {
+            color-scheme: var(--color-scheme, dark);
+            color: var(--text) !important;
+            background: var(--input-bg, var(--bg)) !important;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: var(--calendar-icon, invert(1));
+            opacity: 1;
+            cursor: pointer;
+            background: transparent;
+        }
+        html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+        html[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+        html:not([data-theme="light"]) input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        html:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
+        html:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.15);
+        }
+        html[data-theme="light"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+        html[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: none;
+            opacity: 0.75;
+        }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 560px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 900px) {
+            .form-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        }
+        .form-grid label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 600;
+        }
+        .full { grid-column: 1 / -1; }
+        .upload-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .upload-row input[type="text"],
+        .upload-row input:not([type]) {
+            flex: 1;
+            min-width: 160px;
+        }
+        .upload-folder-select {
+            width: auto;
+            min-width: 100px;
+            max-width: 140px;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .upload-hint {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            min-height: 1.1em;
+        }
+        .upload-hint.ok { color: var(--ok, #4ade80); }
+        .upload-hint.err { color: var(--danger, #f87171); }
+        .upload-hint.loading { color: var(--info, #60a5fa); }
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: rgba(255,152,0,0.08);
+            border: 1px solid rgba(255,152,0,0.25);
+            border-radius: 10px;
+        }
+        .check-row label {
+            margin: 0 !important;
+            text-transform: none !important;
+            font-size: 0.85rem !important;
+            color: var(--warn) !important;
+            cursor: pointer;
+            line-height: 1.35;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 40px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: transform 0.15s, opacity 0.15s, filter 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .btn i { margin-right: 0; font-size: 0.9em; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(140,0,255,0.3);
+        }
+        .btn-ok { background: rgba(74,222,128,0.14); color: var(--ok); border: 1px solid rgba(74,222,128,0.25); }
+        .btn-warn { background: rgba(255,152,0,0.14); color: var(--warn); border: 1px solid rgba(255,152,0,0.25); }
+        .btn-info { background: rgba(59,130,246,0.16); color: var(--info); border: 1px solid rgba(59,130,246,0.25); }
+        .btn-danger { background: rgba(255,68,68,0.14); color: var(--danger); border: 1px solid rgba(255,68,68,0.25); }
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .row-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .row-actions.form-actions {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .row-actions.form-actions .btn {
+            flex: 1 1 auto;
+            min-width: 120px;
+            min-height: var(--touch);
+        }
+        @media (min-width: 560px) {
+            .row-actions.form-actions .btn { flex: 0 0 auto; }
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            table-layout: auto;
+        }
+        @media (min-width: 720px) {
+            #panel-songs table,
+            #panel-users table {
+                width: 100%;
+                table-layout: fixed;
+            }
+            #panel-songs th,
+            #panel-songs td,
+            #panel-users th,
+            #panel-users td {
+                padding: 12px 10px;
+                vertical-align: middle;
+            }
+            #panel-songs th:nth-child(1),
+            #panel-songs td:nth-child(1) { width: 7%; }
+            #panel-songs th:nth-child(2),
+            #panel-songs td:nth-child(2) { width: 28%; }
+            #panel-songs th:nth-child(3),
+            #panel-songs td:nth-child(3) { width: 12%; }
+            #panel-songs th:nth-child(4),
+            #panel-songs td:nth-child(4) { width: 7%; text-align: center; }
+            #panel-songs th:nth-child(5),
+            #panel-songs td:nth-child(5) { width: 7%; text-align: center; }
+            #panel-songs th:nth-child(6),
+            #panel-songs td:nth-child(6) { width: 8%; text-align: center; }
+            #panel-songs th:nth-child(7),
+            #panel-songs td:nth-child(7) { width: 31%; text-align: right; }
+            #panel-songs td:nth-child(7) .row-actions {
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+            }
+            #panel-users th:nth-child(1),
+            #panel-users td:nth-child(1) { width: 16%; }
+            #panel-users th:nth-child(2),
+            #panel-users td:nth-child(2) { width: 14%; }
+            #panel-users th:nth-child(3),
+            #panel-users td:nth-child(3) { width: 12%; }
+            #panel-users th:nth-child(4),
+            #panel-users td:nth-child(4) { width: 10%; text-align: center; }
+            #panel-users th:nth-child(5),
+            #panel-users td:nth-child(5) { width: 14%; }
+            #panel-users th:nth-child(6),
+            #panel-users td:nth-child(6) { width: 34%; text-align: right; }
+            #panel-users td:nth-child(6) .row-actions {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+        }
+        th {
+            text-align: left;
+            padding: 10px 8px;
+            color: var(--muted);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(42,42,56,0.6);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+
+        @media (max-width: 719px) {
+            .table-wrap { overflow: visible; margin: 0; padding: 0; }
+            table thead { display: none; }
+            table, tbody { display: block; width: 100%; }
+            table tr {
+                display: block;
+                background: var(--card2);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 12px 14px;
+                margin-bottom: 10px;
+            }
+            table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 6px 0;
+                border-bottom: 1px dashed rgba(42,42,56,0.5);
+                text-align: right;
+            }
+            table td:last-child {
+                border-bottom: none;
+                padding-top: 10px;
+                margin-top: 4px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            table td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-size: 0.68rem;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                font-weight: 700;
+                text-align: left;
+                flex-shrink: 0;
+                padding-top: 2px;
+            }
+            table td:last-child::before { display: none; }
+            table td .row-actions {
+                width: 100%;
+            }
+            table td .row-actions .btn {
+                flex: 1 1 calc(50% - 4px);
+                min-height: 40px;
+                font-size: 0.75rem;
+            }
+            table td[colspan] {
+                display: block;
+                text-align: center;
+            }
+            table td[colspan]::before { display: none; }
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 14px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+            padding-bottom: 4px;
+        }
+        .pagination::-webkit-scrollbar { height: 3px; }
+        .pagination::-webkit-scrollbar-thumb {
+            background-image: linear-gradient(-45deg, #f1b586, #9f81ca, #c20175, #b33cea);
+            border-radius: 50px;
+        }
+        .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card2);
+            color: var(--muted);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.8rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pagination button.active {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            border: none;
+        }
+        .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+        .pagination .page-info {
+            color: var(--muted);
+            font-size: 0.75rem;
+            margin: 0 4px;
+        }
+
+        .search {
+            width: 100%;
+            margin-bottom: 14px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238b8b9a' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 14px center;
+            padding-left: 42px;
+        }
+
+        #login-screen.wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 24px 16px;
+            max-width: none;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 28px 22px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, #ff0040, #8c00ff, #17adca);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+        .login-box label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .login-box input { margin-bottom: 14px; }
+        .login-box .btn {
+            width: 100%;
+            min-height: var(--touch);
+            margin-top: 4px;
+        }
+        .login-box .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .login-box .back-link:hover { color: var(--text); }
+        .error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            display: none;
+            padding: 10px 12px;
+            background: rgba(255,68,68,0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255,68,68,0.2);
+        }
+
+        .muted { color: var(--muted); font-size: 0.8rem; }
+        .toast {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+            position: fixed;
+            top: calc(12px + var(--safe-t));
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%) translateY(-12px);
+            max-width: min(640px, calc(100vw - 20px));
+            background: var(--card2);
+            border: 1px solid var(--border);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            z-index: 999;
+            opacity: 0;
+            transition: 0.25s;
+            pointer-events: none;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        details summary {
+            cursor: pointer;
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.8rem;
+            list-style: none;
+            padding: 8px 0;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before {
+            content: '▸ ';
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        details[open] summary::before { transform: rotate(90deg); }
+        details pre {
+            margin-top: 8px;
+            padding: 12px;
+            background: #0e0e14;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            overflow: auto;
+            color: var(--muted);
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+            max-height: 240px;
+        }
+        .badge-hidden {
+            color: var(--warn);
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-visible {
+            color: var(--ok);
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .coin-input, .rank-select {
+            min-width: 0;
+            width: 100%;
+            max-width: 110px;
+            min-height: 36px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 719px) {
+            .coin-input, .rank-select { max-width: 140px; }
+        }
+    
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.06); border-radius: 50px; }
+        ::-webkit-scrollbar-thumb {
+            background-image: linear-gradient(-45deg, #f1b586, #9f81ca, #c20175, #b33cea, #17adca, #dd4809, #ad9199);
+            border-radius: 50px;
+        }
+        * { scrollbar-width: thin; scrollbar-color: #c20175 #1a1a1a22; }
+    
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0 16px;
+        }
+        .tab {
+            flex: 1 1 auto;
+            min-height: var(--touch);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(140,0,255,0.25);
+        }
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 14px;
+            padding: 4px 0;
+        }
+        .pagination button {
+            min-width: 40px;
+            min-height: 40px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .pagination button.active {
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(140,0,255,0.3);
+        }
+        .pagination button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+    </style>
+
+    <script>
+    (function () {
+        try {
+            var path = location.pathname;
+            if (path.endsWith('/index.html')) {
+                history.replaceState(null, '', path.slice(0, -10) || '/');
+            } else if (path.endsWith('index.html')) {
+                history.replaceState(null, '', path.slice(0, -10) || '/');
+            } else if (path.endsWith('.html')) {
+                history.replaceState(null, '', path.slice(0, -5) + (path.slice(0, -5).endsWith('/') ? '' : '/'));
+            }
+        } catch (e) {}
+    })();
+    </script>
+</head>
+<body>
+    <div id="login-screen" class="wrap">
+        <div class="login-box">
+            <h1>ADMIN XUANKEN</h1>
+            <div class="error" id="login-error" style="display:none;">Email hoặc mật khẩu không đúng</div>
+            <label for="admin-email">Email admin</label>
+            <input type="email" id="admin-email" placeholder="admin@gmail.com" autocomplete="username">
+            <label for="admin-pass">Mật khẩu</label>
+            <input type="password" id="admin-pass" placeholder="Nhập mật khẩu..." autocomplete="current-password">
+            <button class="btn btn-primary" id="admin-login-btn"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</button>
+            <a href="../" class="btn btn-ghost back-player-btn" style="width:100%;margin-top:12px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-music"></i> Về player</a>
+        </div>
+    </div>
+
+    <div id="admin-app" class="wrap" style="display:none;">
+        <div class="header" id="admin-header">
+            <div>
+                <h1>XUANKEN ADMIN</h1>
+                <div id="admin-identity" style="font-size:0.78rem;color:#fbbf24;margin-top:4px;font-weight:600;">
+                    <i class="fa-solid fa-crown"></i> Tối Thượng
+                    <span id="admin-identity-email" style="color:var(--muted);font-weight:400;margin-left:6px;"></span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="btn btn-ghost" id="admin-theme-btn" title="Đổi giao diện dark/light"><i class="fa-solid fa-moon" id="admin-theme-icon"></i> <span class="btn-label" id="admin-theme-label">Dark</span></button>
+                <button class="btn btn-warn" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> <span class="btn-label">Đăng xuất</span></button>
+                <a href="../" class="btn btn-info"><i class="fa-solid fa-music"></i> <span class="btn-label">Player</span></a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="grid-stats" id="stats-grid"></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="songs"><i class="fa-solid fa-music"></i> Bài hát</button>
+            <button class="tab" data-tab="users"><i class="fa-solid fa-users"></i> Người dùng</button>
+            <button class="tab" data-tab="settings"><i class="fa-solid fa-gear"></i> Cài đặt</button>
+        </div>
+
+        <div class="panel active" id="panel-songs">
+            <div class="card">
+                <h2>Thêm / sửa bài hát (Firebase)</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>ID bài *</label>
+                        <input id="s-id" placeholder="VD: ABR">
+                    </div>
+                    <div>
+                        <label>Tên bài *</label>
+                        <input id="s-name" placeholder="Tên bài hát">
+                    </div>
+                    <div>
+                        <label>Ca sĩ</label>
+                        <input id="s-artist" placeholder="XuanKen Official" value="XuanKen Official">
+                    </div>
+                    <div>
+                        <label>Giá mua XK</label>
+                        <input id="s-price" type="number" min="0" value="10">
+                    </div>
+                    <div>
+                        <label>Giá thuê / ngày XK</label>
+                        <input id="s-rent-price" type="number" min="0" placeholder="Trống = 40% giá mua">
+                    </div>
+                    <div class="full">
+                        <label>Link audio DEMO 1 phút *</label>
+                        <div class="upload-row">
+                            <input id="s-audio" placeholder="https://.../demo-1p.mp3" style="flex:1;min-width:160px;">
+                            <select id="s-audio-folder" class="upload-folder-select" title="Folder Cloudinary">
+                                <option value="DEMO" selected>DEMO</option>
+                                <option value="MUSIC">MUSIC</option>
+                            </select>
+                            <input type="file" id="s-audio-file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" style="display:none;">
+                            <button type="button" class="btn btn-info" id="s-audio-upload-btn" title="Upload file lên Cloudinary"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+                        </div>
+                        <small class="upload-hint" id="s-audio-upload-status"></small>
+                    </div>
+                    <div class="full">
+                        <label>Link audio FULL 1 (sau khi mua/thuê)</label>
+                        <input id="s-audio-full" placeholder="https://.../full.mp3 — để trống = dùng link demo">
+                    </div>
+                    <div class="full">
+                        <label>Link audio FULL 2 (dự phòng / random)</label>
+                        <div class="upload-row">
+                            <input id="s-audio-full-2" placeholder="https://.../full-backup.mp3 — random + fallback nếu link 1 lỗi" style="flex:1;min-width:160px;">
+                            <select id="s-audio-full-2-folder" class="upload-folder-select" title="Folder Cloudinary">
+                                <option value="DEMO">DEMO</option>
+                                <option value="MUSIC" selected>MUSIC</option>
+                            </select>
+                            <input type="file" id="s-audio-full-2-file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" style="display:none;">
+                            <button type="button" class="btn btn-info" id="s-audio-full-2-upload-btn" title="Upload file lên Cloudinary"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+                        </div>
+                        <small class="upload-hint" id="s-audio-full-2-upload-status"></small>
+                    </div>
+                    <div class="full">
+                        <label>Link audio WAV (full — tùy chọn nghe chất lượng cao)</label>
+                        <div class="upload-row">
+                            <input id="s-audio-wav" placeholder="https://.../full.wav — để trống = chỉ dùng MP3" style="flex:1;min-width:160px;">
+                            <select id="s-audio-wav-folder" class="upload-folder-select" title="Folder Cloudinary">
+                                <option value="DEMO">DEMO</option>
+                                <option value="MUSIC" selected>MUSIC</option>
+                            </select>
+                            <input type="file" id="s-audio-wav-file" accept="audio/*,.wav,.flac" style="display:none;">
+                            <button type="button" class="btn btn-info" id="s-audio-wav-upload-btn" title="Upload file lên Cloudinary"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+                        </div>
+                        <small class="upload-hint" id="s-audio-wav-upload-status"></small>
+                    </div>
+                    <div class="full">
+                        <label>Lịch đăng bài (để trống = hiện ngay)</label>
+                        <input id="s-publish-at" type="datetime-local">
+                    </div>
+                    <div class="full check-row">
+                        <input type="checkbox" id="s-hidden">
+                        <label for="s-hidden">
+                            <i class="fa-solid fa-eye-slash"></i> Ẩn bài tạm thời (link lỗi / đang sửa — player không hiện)
+                        </label>
+                    </div>
+                    <div class="full">
+                        <label>Link ảnh bìa</label>
+                        <input id="s-art" placeholder="https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/logoofficial.png" value="https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/logoofficial.png">
+                    </div>
+                    <div class="full">
+                        <label>Lyric LRC 1 (text hoặc URL)</label>
+                        <textarea id="s-lrc1" placeholder="[00:12.00] Lời..."></textarea>
+                    </div>
+                    <div class="full">
+                        <label>Lyric LRC 2 (tuỳ chọn)</label>
+                        <textarea id="s-lrc2"></textarea>
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button class="btn btn-primary" id="save-song-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu bài hát</button>
+                    <button class="btn btn-warn" id="clear-song-form-btn"><i class="fa-solid fa-eraser"></i> Xoá form</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Danh sách bài trên Firebase</h2>
+                <input class="search" id="song-search" placeholder="Tìm bài / ID...">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên</th>
+                                <th>Ca sĩ</th>
+                                <th>Nghe</th>
+                                <th>Giá</th>
+                                <th>TT</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="songs-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="songs-pagination"></div>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-users">
+            <div class="card">
+                <h2>Người dùng (Firebase)</h2>
+                <input class="search" id="user-search" placeholder="Tìm username...">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Hạng</th>
+                                <th>XK</th>
+                                <th>Bài sở hữu</th>
+                                <th>Điểm danh</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card" style="margin-top:16px;">
+                <h2>Dọn sở hữu (owned)</h2>
+                <p class="muted" style="margin:0 0 12px;font-size:0.8rem;line-height:1.5;">
+                    Xóa ID bài đã bị xóa khỏi list nhạc, và gộp ID trùng trong mảng <code>owned</code> của từng user.
+                    Thống kê «Lượt mua» chỉ đếm bài còn tồn tại (đã bỏ trùng).
+                </p>
+                <div class="row-actions form-actions" style="border:none;padding-top:0;margin:0;">
+                    <button type="button" class="btn btn-warn" id="cleanup-owned-btn">
+                        <i class="fa-solid fa-broom"></i> Dọn ID mồ côi / trùng
+                    </button>
+                </div>
+                <pre id="cleanup-owned-log" style="margin-top:10px;font-size:0.7rem;max-height:160px;overflow:auto;display:none;white-space:pre-wrap;"></pre>
+            </div>
+        </div>
+
+        <div class="panel" id="panel-settings">
+            <div class="card">
+                <h2>Cài đặt hệ thống</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>Giá bài mặc định (XK)</label>
+                        <input type="number" id="set-song-price" min="0">
+                    </div>
+                    <div>
+                        <label>Xu điểm danh / ngày</label>
+                        <input type="number" id="set-checkin" min="0">
+                    </div>
+                    <div>
+                        <label>Xu tặng user mới</label>
+                        <input type="number" id="set-starter" min="0">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button class="btn btn-primary" id="save-settings-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu cài đặt</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Bảo mật đăng nhập (Firebase Auth)</h2>
+                <div class="form-grid">
+                    <div class="full check-row">
+                        <input type="checkbox" id="set-require-pin" checked>
+                        <label for="set-require-pin">Bắt buộc PIN 6 số khi vào player (PIN = mật khẩu Auth)</label>
+                    </div>
+                    <div class="full check-row" style="background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.25);">
+                        <input type="checkbox" id="set-allow-register" checked>
+                        <label for="set-allow-register" style="color:var(--info)!important;">Cho phép đăng ký username mới từ màn hình đầu</label>
+                    </div>
+                    <div>
+                        <label>Giới hạn số lần đăng ký (0 = không giới hạn)</label>
+                        <input type="number" id="set-max-registrations" min="0" step="1" placeholder="0">
+                    </div>
+                    <div>
+                        <label>Đã đăng ký (tự tăng)</label>
+                        <input type="number" id="set-registration-count" min="0" step="1" placeholder="0">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-security-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu cài đặt</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Email được phép vào Admin</h2>
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Danh sách email admin (mỗi dòng 1 email)</label>
+                        <textarea id="set-admin-emails" rows="4" placeholder="admin@gmail.com&#10;ban@example.com" style="width:100%;min-height:90px;resize:vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-admin-emails-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu danh sách admin</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Thông báo &amp; Flash sale</h2>
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Banner toàn site</label>
+                        <input type="text" id="set-site-banner" placeholder="Thông báo hiện trên đầu player...">
+                    </div>
+                    <div>
+                        <label>Flash sale %</label>
+                        <input type="number" id="set-flash-pct" min="0" max="90" value="0">
+                    </div>
+                    <div>
+                        <label>Flash sale đến</label>
+                        <input type="datetime-local" id="set-flash-until">
+                    </div>
+                    <div>
+                        <label>Xu thưởng invite</label>
+                        <input type="number" id="set-invite-reward" min="0" value="20">
+                    </div>
+                    <div class="full">
+                        <label>Broadcast toast (gửi ngay khi Lưu nếu có nội dung)</label>
+                        <input type="text" id="set-broadcast" placeholder="Tin nhắn bắn tới mọi client đang mở...">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-flash-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu cài đặt</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Đếm ngược sự kiện</h2>
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Tiêu đề sự kiện</label>
+                        <input type="text" id="set-countdown-title" placeholder="VD: Sinh nhật XuanKen / Ra mắt album…">
+                    </div>
+                    <div class="full">
+                        <label>Ngày giờ đích</label>
+                        <input type="datetime-local" id="set-countdown-at">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-countdown-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu đếm ngược</button>
+                    <button type="button" class="btn btn-ghost" id="clear-countdown-btn"><i class="fa-solid fa-xmark"></i> Xóa</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Liên kết (Tiện ích)</h2>
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Danh sách liên kết</label>
+                        <textarea id="set-partner-links" rows="5" placeholder="YouTube | https://youtube.com/@xuanken&#10;Facebook | https://facebook.com/…&#10;TikTok | https://tiktok.com/@…" style="width:100%;min-height:110px;resize:vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-links-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu liên kết</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Cloudinary (Upload audio)</h2>
+                <p class="muted" style="margin-bottom:12px;font-size:0.78rem;">Dùng cho nút Upload ở link DEMO và FULL 2. Tạo <b>Unsigned Upload Preset</b> trên Cloudinary Dashboard → Settings → Upload. Chọn folder DEMO / MUSIC ngay khi upload.</p>
+                <div class="form-grid">
+                    <div>
+                        <label>Cloud name</label>
+                        <input type="text" id="set-cloudinary-cloud" placeholder="vd: dxxxx">
+                    </div>
+                    <div>
+                        <label>Upload preset (unsigned)</label>
+                        <input type="text" id="set-cloudinary-preset" placeholder="vd: xuanken_audio">
+                    </div>
+                    <div>
+                        <label>Folder DEMO</label>
+                        <input type="text" id="set-cloudinary-folder-demo" placeholder="DEMO">
+                    </div>
+                    <div>
+                        <label>Folder MUSIC</label>
+                        <input type="text" id="set-cloudinary-folder-music" placeholder="MUSIC">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-cloudinary-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu Cloudinary</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Gift code</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>Mã</label>
+                        <input type="text" id="gift-new-code" placeholder="" maxlength="24">
+                    </div>
+                    <div>
+                        <label>Xu</label>
+                        <input type="number" id="gift-new-coins" min="1" value="50">
+                    </div>
+                    <div>
+                        <label>Số lần dùng</label>
+                        <input type="number" id="gift-new-uses" min="-1" value="1" placeholder="1">
+                        <p class="muted" style="margin-top:4px;font-size:0.68rem;">1 = một lần · 10 = mười lần · <b>-1</b> = vĩnh viễn (không giới hạn)</p>
+                    </div>
+                    <div class="full">
+                        <button type="button" class="btn btn-ok" id="gift-create-btn"><i class="fa-solid fa-ticket"></i> Tạo gift code</button>
+                    </div>
+                </div>
+                <div id="gift-list" class="muted" style="margin-top:8px;font-size:0.75rem;"></div>
+            </div>
+
+
+            <div class="card">
+                <h2>Progress thumb (cửa hàng)</h2>
+                <div class="form-grid">
+                    <div>
+                        <label>ID (vd: cinnamoroll)</label>
+                        <input type="text" id="thumb-new-id" placeholder="cinnamoroll" maxlength="32">
+                    </div>
+                    <div>
+                        <label>Tên hiển thị</label>
+                        <input type="text" id="thumb-new-name" placeholder="Cinnamoroll">
+                    </div>
+                    <div class="full">
+                        <label>URL ảnh (PNG/GIF trong suốt tốt)</label>
+                        <input type="url" id="thumb-new-url" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label>Giá (xu)</label>
+                        <input type="number" id="thumb-new-price" min="0" value="30">
+                    </div>
+                    <div class="full">
+                        <button type="button" class="btn btn-ok" id="thumb-add-btn"><i class="fa-solid fa-plus"></i> Thêm thumb</button>
+                    </div>
+                </div>
+                <div id="thumb-admin-list" class="muted" style="margin-top:10px;font-size:0.75rem;"></div>
+            </div>
+
+            <div class="card">
+                <h2>Công cụ</h2>
+                <div class="row-actions form-actions" style="border:none;padding-top:0;margin-top:0;">
+                    <button type="button" class="btn btn-info" id="check-dead-links-btn"><i class="fa-solid fa-link-slash"></i> Kiểm tra link audio</button>
+                    <button type="button" class="btn btn-warn" id="migrate-fulls-btn" title="Chuyển audioFull/audioFull2 từ songs → songFulls"><i class="fa-solid fa-shield-halved"></i> Tách link FULL → songFulls</button>
+                </div>
+                <div id="tools-progress-wrap" style="display:none;margin-top:12px;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+                        <span id="tools-progress-label">Đang xử lý...</span>
+                        <span id="tools-progress-pct">0%</span>
+                    </div>
+                    <div style="height:10px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;">
+                        <div id="tools-progress-bar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#ff0040,#8c00ff,#17adca);transition:width 0.2s ease;"></div>
+                    </div>
+                </div>
+                <pre id="dead-link-report" style="margin-top:8px;font-size:0.7rem;max-height:160px;overflow:auto;display:none;"></pre>
+            </div>
+
+            <div class="card" style="border-color:rgba(255,68,68,0.45);background:rgba(255,68,68,0.06);">
+                <h2 style="color:#ff6b6b;">Vùng nguy hiểm — Reset toàn bộ</h2>
+                <div class="form-grid" style="margin-bottom:10px;">
+                    <div class="full check-row">
+                        <input type="checkbox" id="factory-wipe-songs" checked>
+                        <label for="factory-wipe-songs">Xóa toàn bộ bài hát (songs)</label>
+                    </div>
+                    <div class="full check-row">
+                        <input type="checkbox" id="factory-wipe-users" checked>
+                        <label for="factory-wipe-users">Xóa toàn bộ user / xu / owned (users + usernames)</label>
+                    </div>
+                    <div class="full check-row">
+                        <input type="checkbox" id="factory-wipe-extras" checked>
+                        <label for="factory-wipe-extras">Xóa prices, giftCodes, chat, progressThumbs, broadcast, weeklyListens</label>
+                    </div>
+                    <div class="full check-row">
+                        <input type="checkbox" id="factory-reset-settings" checked>
+                        <label for="factory-reset-settings">Reset registrationCount = 0 (giữ siteName / icon / giá mặc định)</label>
+                    </div>
+                </div>
+                <label style="font-size:0.75rem;color:var(--muted);">Gõ <strong style="color:#ff6b6b;">RESET</strong> để xác nhận</label>
+                <input type="text" id="factory-confirm-input" placeholder="RESET" autocomplete="off" style="margin-top:6px;border-color:rgba(255,68,68,0.4);">
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-danger" id="factory-reset-btn"><i class="fa-solid fa-bomb"></i> RESET TOÀN BỘ FIREBASE</button>
+                </div>
+                <pre id="factory-reset-log" style="margin-top:10px;font-size:0.7rem;max-height:180px;overflow:auto;display:none;white-space:pre-wrap;"></pre>
+            </div>
+
+            <div class="card">
+                <h2>Thương hiệu &amp; đa web</h2>
+                <div class="form-grid">
+                    <div style="grid-column:1/-1;">
+                        <label>Tên web trên tab (tab trình duyệt)</label>
+                        <input type="text" id="set-site-name" placeholder="XuanKen Music Official">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label>Title trang (thẻ title / tiêu đề)</label>
+                        <input type="text" id="set-site-title" placeholder="XuanKen Music Official — nghe nhạc">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label>Icon web / Favicon (URL ảnh .png / .ico)</label>
+                        <input type="url" id="set-site-icon" placeholder="https://.../icon.png">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label>Prefix localStorage</label>
+                        <input type="text" id="set-site-prefix" placeholder="vd: music6, site1... (để trống = không prefix)">
+                    </div>
+                </div>
+                <div class="row-actions form-actions">
+                    <button type="button" class="btn btn-primary" id="save-brand-btn"><i class="fa-solid fa-floppy-disk"></i> Lưu cài đặt</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Xuất / nhập danh sách bài hát</h2>
+                <div class="row-actions form-actions" style="margin-bottom:12px;border:none;padding-top:0;">
+                    <button class="btn btn-ok" id="export-songs-btn"><i class="fa-solid fa-file-export"></i> Xuất list nhạc (JSON)</button>
+                    <button class="btn btn-info" id="import-songs-btn"><i class="fa-solid fa-file-import"></i> Nhập list nhạc (JSON)</button>
+                    <input type="file" id="import-songs-file" accept=".json,application/json" style="display:none;">
+                </div>
+                <label style="display:block;font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Hoặc dán JSON vào đây</label>
+                <textarea id="import-songs-textarea" placeholder='[{"id":"ABR","name":"...","artist":"...","audio":"https://...","audioFull":"","audioFull2":"","audioWav":"","albumArt":"","lrc1":"","lrc2":"","price":10}]'></textarea>
+                <div class="row-actions form-actions" style="margin-top:12px;">
+                    <button class="btn btn-primary" id="import-songs-paste-btn"><i class="fa-solid fa-paste"></i> Nhập từ ô trên</button>
+                </div>
+                <p class="muted" style="margin-top:10px;">
+                    Khi nhập: bài trùng ID sẽ được cập nhật, bài mới sẽ được thêm. Không xóa bài không có trong file.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const DEFAULT_SETTINGS = {
+            songPrice: 10,
+            checkinReward: 15,
+            starterCoins: 20,
+            siteName: 'XuanKen Music Official',
+            siteTitle: 'XuanKen Music Official',
+            siteIcon: 'https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/icon.png',
+            sitePrefix: 'music6',
+            requirePin: true,
+            allowRegister: true,
+            maxRegistrations: 0,
+            registrationCount: 0,
+            siteBanner: '',
+            flashSalePercent: 0,
+            flashSaleUntil: '',
+            inviteReward: 20,
+            cloudinaryCloud: '',
+            cloudinaryPreset: '',
+            cloudinaryFolderDemo: 'DEMO',
+            cloudinaryFolderMusic: 'MUSIC'
+        };
+
+        let songsCache = [];
+        let editingSongId = null;
+        let usersCache = {};
+        let settingsCache = { ...DEFAULT_SETTINGS };
+        let songsPage = 1;
+        const SONGS_PER_PAGE = 10;
+        let songsFilter = '';
+
+        function getAdminApp() {
+            if (typeof firebase === 'undefined') return null;
+            try {
+                return firebase.app('xk-admin');
+            } catch (e) {
+                const cfg = window.FIREBASE_CONFIG || (typeof FIREBASE_CONFIG !== 'undefined' ? FIREBASE_CONFIG : null);
+                if (!cfg) {
+                    console.error('FIREBASE_CONFIG thiếu');
+                    return null;
+                }
+                return firebase.initializeApp(cfg, 'xk-admin');
+            }
+        }
+        function getAdminAuth() {
+            const app = getAdminApp();
+            return app ? app.auth() : null;
+        }
+        function db() {
+            const app = getAdminApp();
+            if (app) return app.database();
+            return window.fbDB || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+
+        function dataPath(key) {
+            return String(key || '').replace(/^\/+|\/+$/g, '');
+        }
+
+        function applyBranding() {
+            const name = (settingsCache.siteName || DEFAULT_SETTINGS.siteName).trim() || DEFAULT_SETTINGS.siteName;
+            const icon = (settingsCache.siteIcon || DEFAULT_SETTINGS.siteIcon).trim() || DEFAULT_SETTINGS.siteIcon;
+            const title = (settingsCache.siteTitle || name).trim() || name;
+            document.title = 'Admin | ' + title;
+            const fav = document.getElementById('site-favicon');
+            if (fav && icon) fav.href = icon;
+        }
+
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2200);
+        }
+
+        function escapeHtml(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        function sanitizeKey(name) {
+            return String(name || '').trim().replace(/[.#$\[\]/]/g, '_');
+        }
+
+        async function loadSettings() {
+            try {
+                const snap = await db().ref('settings').once('value');
+                const val = snap.val();
+                settingsCache = { ...DEFAULT_SETTINGS, ...(val || {}) };
+            } catch (e) {
+                console.warn('loadSettings fallback', e);
+                settingsCache = { ...DEFAULT_SETTINGS };
+            }
+            document.getElementById('set-song-price').value = settingsCache.songPrice;
+            document.getElementById('set-checkin').value = settingsCache.checkinReward;
+            document.getElementById('set-starter').value = settingsCache.starterCoins;
+            document.getElementById('set-require-pin').checked = settingsCache.requirePin !== false;
+            document.getElementById('set-allow-register').checked = settingsCache.allowRegister !== false;
+            const maxRegEl = document.getElementById('set-max-registrations');
+            if (maxRegEl) maxRegEl.value = Math.max(0, Number(settingsCache.maxRegistrations) || 0);
+            const regCountEl = document.getElementById('set-registration-count');
+            if (regCountEl) regCountEl.value = Math.max(0, Number(settingsCache.registrationCount) || 0);
+            if (document.getElementById('set-site-banner')) document.getElementById('set-site-banner').value = settingsCache.siteBanner || '';
+            if (document.getElementById('set-flash-pct')) document.getElementById('set-flash-pct').value = settingsCache.flashSalePercent || 0;
+            if (document.getElementById('set-invite-reward')) document.getElementById('set-invite-reward').value = settingsCache.inviteReward || 20;
+            if (document.getElementById('set-flash-until') && settingsCache.flashSaleUntil) {
+                try {
+                    const d = new Date(settingsCache.flashSaleUntil);
+                    if (!Number.isNaN(d.getTime())) {
+                        const pad = n => String(n).padStart(2,'0');
+                        document.getElementById('set-flash-until').value = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+                    }
+                } catch(e) {}
+            }
+            document.getElementById('set-site-name').value = settingsCache.siteName || '';
+            if (document.getElementById('set-site-title')) document.getElementById('set-site-title').value = settingsCache.siteTitle || settingsCache.siteName || '';
+            document.getElementById('set-site-icon').value = settingsCache.siteIcon || '';
+            document.getElementById('set-site-prefix').value = settingsCache.sitePrefix || '';
+            // Countdown + partner links
+            try {
+                const ct = document.getElementById('set-countdown-title');
+                const ca = document.getElementById('set-countdown-at');
+                if (ct) ct.value = settingsCache.countdownTitle || '';
+                if (ca && settingsCache.countdownAt) {
+                    const d = new Date(settingsCache.countdownAt);
+                    if (!Number.isNaN(d.getTime())) {
+                        const pad = n => String(n).padStart(2, '0');
+                        ca.value = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+                    }
+                } else if (ca) ca.value = '';
+                const pl = document.getElementById('set-partner-links');
+                if (pl) {
+                    const links = settingsCache.partnerLinks;
+                    if (Array.isArray(links) && links.length) {
+                        pl.value = links.map(L => {
+                            const t = (L && L.title) || '';
+                            const u = (L && L.url) || '';
+                            const ic = (L && L.icon) || '';
+                            return ic ? (t + ' | ' + u + ' | ' + ic) : (t + ' | ' + u);
+                        }).join('\n');
+                    } else if (typeof links === 'string') {
+                        pl.value = links;
+                    } else pl.value = '';
+                }
+                const cc = document.getElementById('set-cloudinary-cloud');
+                const cp = document.getElementById('set-cloudinary-preset');
+                const cfd = document.getElementById('set-cloudinary-folder-demo');
+                const cfm = document.getElementById('set-cloudinary-folder-music');
+                if (cc) cc.value = settingsCache.cloudinaryCloud || '';
+                if (cp) cp.value = settingsCache.cloudinaryPreset || '';
+                if (cfd) cfd.value = settingsCache.cloudinaryFolderDemo || 'DEMO';
+                if (cfm) cfm.value = settingsCache.cloudinaryFolderMusic || 'MUSIC';
+            } catch (e) { console.warn('load countdown/links', e); }
+
+            try {
+                const ae = await db().ref('settings/adminEmails').once('value');
+                const val = ae.val();
+                let list = [];
+                if (Array.isArray(val)) list = val;
+                else if (val && typeof val === 'object') list = Object.keys(val);
+                const ta = document.getElementById('set-admin-emails');
+                if (ta) ta.value = list.map(x => String(x || '').trim()).filter(Boolean).join('\n');
+            } catch (e) {
+                console.warn('load adminEmails', e);
+            }
+            applyBranding();
+        }
+
+        async function fetchSongFullById(id) {
+            const key = String(id || '');
+            if (!key) return { audioFull: '', audioFull2: '', audioWav: '' };
+            try {
+                const snap = await db().ref(dataPath('songFulls') + '/' + key).once('value');
+                const v = snap.val() || {};
+                return {
+                    audioFull: (v.audioFull || '') || '',
+                    audioFull2: (v.audioFull2 || '') || '',
+                    audioWav: (v.audioWav || '') || ''
+                };
+            } catch (e) {
+                console.warn('fetchSongFullById', key, e && (e.code || e.message));
+                return { audioFull: '', audioFull2: '', audioWav: '' };
+            }
+        }
+
+        async function loadSongs(keepPage = false) {
+            const snap = await db().ref(dataPath('songs')).once('value');
+            const obj = snap.val() || {};
+            let fulls = {};
+            // Thử đọc cả node (admin). Nếu Rules chặn list, fallback từng ID.
+            try {
+                const fullSnap = await db().ref(dataPath('songFulls')).once('value');
+                fulls = fullSnap.val() || {};
+            } catch (e) {
+                console.warn('load songFulls bulk', e && (e.code || e.message));
+            }
+            const ids = Object.keys(obj);
+            if (!Object.keys(fulls).length && ids.length) {
+                const chunk = 20;
+                for (let i = 0; i < ids.length; i += chunk) {
+                    const slice = ids.slice(i, i + chunk);
+                    await Promise.all(slice.map(async (id) => {
+                        const f = await fetchSongFullById(id);
+                        if (f.audioFull || f.audioFull2 || f.audioWav) fulls[id] = f;
+                    }));
+                }
+            }
+            songsCache = ids.map(id => {
+                const s = obj[id] || {};
+                const f = fulls[id] || fulls[String(s.id || id)] || {};
+                return {
+                    id: String(s.id || id),
+                    _fbKey: String(id),
+                    name: s.name || id,
+                    artist: s.artist || '',
+                    audio: s.audio || '',
+                    audioFull: (f.audioFull || s.audioFull || '') || '',
+                    audioFull2: (f.audioFull2 || s.audioFull2 || '') || '',
+                    audioWav: (f.audioWav || s.audioWav || '') || '',
+                    albumArt: s.albumArt || '',
+                    listenCount: Number(s.listenCount) || 0,
+                    lrc1: s.lrc1 || '',
+                    lrc2: s.lrc2 || '',
+                    price: s.price != null ? Number(s.price) : settingsCache.songPrice,
+                    rentPrice: s.rentPrice != null ? Number(s.rentPrice) : null,
+                    publishAt: s.publishAt || null,
+                    hidden: !!s.hidden
+                };
+            });
+            songsCache.sort((a, b) => {
+                const na = String(a.name || '').localeCompare(String(b.name || ''), 'vi', { sensitivity: 'base' });
+                if (na !== 0) return na;
+                return String(a.id || '').localeCompare(String(b.id || ''), 'vi', { sensitivity: 'base' });
+            });
+            const searchVal = (document.getElementById('song-search') && document.getElementById('song-search').value) || '';
+            if (keepPage) {
+                songsFilter = searchVal;
+                renderSongs(songsFilter, true);
+            } else {
+                renderSongs(searchVal);
+            }
+            refreshStats();
+        }
+
+        const RESERVED_ADMIN_NAMES = ['tối thượng', 'toi thuong', 'toithuong', 'administrator', 'admin', 'xuanken admin'];
+
+        function isReservedAdminName(name) {
+            const n = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+            return RESERVED_ADMIN_NAMES.includes(n);
+        }
+
+        function isAdminOnlyProfile(u, key) {
+            if (!u) return false;
+            const name = String(u.username || key || '').trim();
+            if (isReservedAdminName(name)) return true;
+            if (String(u.rank || '').toLowerCase() === 'toi_thuong') return true;
+            if (u.isAdmin === true || u.adminOnly === true) return true;
+            const em = String(u.email || u.loginEmail || '').trim().toLowerCase();
+            if (em && !em.endsWith('@xuanken.user') && em.includes('@')) return true;
+            try {
+                const _aa = getAdminAuth(); const cur = _aa && _aa.currentUser;
+                if (cur && (cur.uid === key || cur.uid === u.uid)) return true;
+            } catch (e) {}
+            return false;
+        }
+
+        async function loadUsers() {
+            const snap = await db().ref(dataPath('users')).once('value');
+            const obj = snap.val() || {};
+            usersCache = {};
+            let skippedAdmin = 0;
+            Object.keys(obj).forEach(k => {
+                const u = obj[k] || {};
+                if (isAdminOnlyProfile(u, k)) {
+                    skippedAdmin++;
+                    return;
+                }
+                const name = u.username || k;
+                if (usersCache[name] && usersCache[name].uid && !u.username) return;
+                usersCache[name] = {
+                    key: k,
+                    uid: u.uid || k,
+                    coins: u.coins | 0,
+                    owned: parseOwnedField(u.owned),
+                    lastCheckin: u.lastCheckin || '',
+                    createdAt: u.createdAt || 0,
+                    rank: u.rank || 'member',
+                    banned: !!u.banned
+                };
+            });
+            if (skippedAdmin) console.log('[admin] Ẩn', skippedAdmin, 'profile admin khỏi list player');
+            renderUsers(document.getElementById('user-search').value);
+            refreshStats();
+        }
+
+        function parseOwnedField(owned) {
+            if (Array.isArray(owned)) {
+                return owned.map(x => String(x == null ? '' : x).trim()).filter(Boolean);
+            }
+            if (owned && typeof owned === 'object') {
+                const out = [];
+                Object.keys(owned).forEach(k => {
+                    const v = owned[k];
+                    if (v === false || v == null) return;
+                    if (typeof v === 'string' && v.trim()) out.push(v.trim());
+                    else if (v === true || v === 1 || typeof v === 'number') out.push(String(k).trim());
+                    else if (/^\d+$/.test(k) && v != null) out.push(String(v).trim());
+                });
+                return out.filter(Boolean);
+            }
+            if (typeof owned === 'string' && owned.trim()) {
+                return owned.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
+            }
+            return [];
+        }
+
+        let songIdAliasesCache = Object.create(null);
+
+        async function loadSongIdAliasesAdmin() {
+            try {
+                const snap = await db().ref(dataPath('songIdAliases')).once('value');
+                const v = snap.val() || {};
+                const map = Object.create(null);
+                Object.keys(v).forEach(oldId => {
+                    const to = v[oldId] && (v[oldId].to || v[oldId]);
+                    if (!to) return;
+                    map[String(oldId)] = String(to);
+                    map[String(oldId).toLowerCase()] = String(to);
+                });
+                songIdAliasesCache = map;
+            } catch (e) {
+                console.warn('loadSongIdAliasesAdmin', e);
+            }
+            return songIdAliasesCache;
+        }
+
+        function getSongIdSet() {
+            const set = new Set();
+            songsCache.forEach(s => {
+                const id = String(s.id || '').trim();
+                if (id) {
+                    set.add(id);
+                    set.add(id.toLowerCase());
+                }
+                if (s._fbKey) {
+                    const k = String(s._fbKey).trim();
+                    if (k) {
+                        set.add(k);
+                        set.add(k.toLowerCase());
+                    }
+                }
+            });
+            // ID cũ trong alias trỏ tới bài còn tồn tại → không tính mồ côi
+            Object.keys(songIdAliasesCache || {}).forEach(oldId => {
+                const to = songIdAliasesCache[oldId];
+                if (!to) return;
+                if (set.has(String(to)) || set.has(String(to).toLowerCase())) {
+                    set.add(String(oldId));
+                    set.add(String(oldId).toLowerCase());
+                }
+            });
+            return set;
+        }
+
+        function ownedIdInCatalog(sid, songIds) {
+            if (!sid) return false;
+            if (songIds.has(sid) || songIds.has(sid.toLowerCase())) return true;
+            // alias → id mới còn trong catalog
+            const to = songIdAliasesCache[sid] || songIdAliasesCache[String(sid).toLowerCase()];
+            if (to && (songIds.has(String(to)) || songIds.has(String(to).toLowerCase()))) return true;
+            return false;
+        }
+
+        function sanitizeOwnedList(owned, songIds) {
+            const ids = songIds || getSongIdSet();
+            const seen = new Set();
+            const cleaned = [];
+            let orphans = 0, dupes = 0, empty = 0;
+            parseOwnedField(owned).forEach(raw => {
+                const sid = String(raw == null ? '' : raw).trim();
+                if (!sid) { empty++; return; }
+                // Map alias cũ → ID mới nếu có
+                const mapped = songIdAliasesCache[sid] || songIdAliasesCache[sid.toLowerCase()] || sid;
+                const canon = String(mapped);
+                const canonLower = canon.toLowerCase();
+                if (!ownedIdInCatalog(sid, ids) && !ownedIdInCatalog(canon, ids)) { orphans++; return; }
+                if (seen.has(canonLower)) { dupes++; return; }
+                seen.add(canonLower);
+                cleaned.push(canon);
+            });
+            return {
+                cleaned,
+                removed: empty + orphans + dupes,
+                orphans,
+                dupes,
+                empty
+            };
+        }
+
+        function validOwnedCount(owned) {
+            return sanitizeOwnedList(owned).cleaned.length;
+        }
+
+        async function refreshStats() {
+            try { await loadSongIdAliasesAdmin(); } catch (e) {}
+            const users = Object.keys(usersCache);
+            const songIds = getSongIdSet();
+            let totalCoins = 0, totalOwned = 0, totalRawOwned = 0, totalOrphans = 0, totalDupes = 0, totalEmpty = 0;
+            const orphanSamples = [];
+            users.forEach(n => {
+                totalCoins += usersCache[n].coins | 0;
+                const raw = usersCache[n].owned || [];
+                totalRawOwned += raw.length;
+                const s = sanitizeOwnedList(raw, songIds);
+                totalOwned += s.cleaned.length;
+                totalOrphans += s.orphans;
+                totalDupes += s.dupes;
+                totalEmpty += s.empty;
+                // Lấy mẫu ID mồ côi để debug
+                parseOwnedField(raw).forEach(id => {
+                    if (!ownedIdInCatalog(id, songIds) && orphanSamples.length < 12) {
+                        orphanSamples.push(n + ':' + id);
+                    }
+                });
+            });
+            const totalListens = songsCache.reduce((s, x) => s + (x.listenCount || 0), 0);
+            const junk = totalOrphans + totalDupes;
+            const buyLabel = junk > 0
+                ? `Lượt mua <span style="opacity:.65;font-size:0.65em;">(−${junk} rác)</span>`
+                : 'Lượt mua';
+            const tip = 'Thô: ' + totalRawOwned + ' · Hợp lệ: ' + totalOwned + ' · Mồ côi: ' + totalOrphans + ' · Trùng: ' + totalDupes
+                + (orphanSamples.length ? ' · VD: ' + orphanSamples.join(', ') : '');
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="stat"><div class="n">${users.length}</div><div class="l">Người dùng</div></div>
+                <div class="stat"><div class="n">${songsCache.length}</div><div class="l">Bài hát</div></div>
+                <div class="stat"><div class="n">${totalCoins}</div><div class="l">Tổng XK</div></div>
+                <div class="stat" title="${tip.replace(/"/g, '&quot;')}"><div class="n">${totalOwned}</div><div class="l">${buyLabel}</div></div>
+                <div class="stat"><div class="n">${totalListens}</div><div class="l">Lượt nghe</div></div>
+            `;
+            if (totalOrphans > 0) {
+                console.warn('[admin] ID mồ côi mẫu:', orphanSamples);
+            }
+        }
+
+        async function fillSongForm(song) {
+            editingSongId = song.id || null;
+            const sidEl = document.getElementById('s-id');
+            sidEl.value = song.id || '';
+            // Khóa ID khi sửa bài — tránh đổi ID nhầm → mất sở hữu / phải mua lại
+            sidEl.readOnly = false;
+            sidEl.title = 'Có thể đổi ID — hệ thống sẽ chuyển sở hữu user sang ID mới';
+            sidEl.style.opacity = '';
+            document.getElementById('s-name').value = song.name || '';
+            document.getElementById('s-artist').value = song.artist || '';
+            document.getElementById('s-price').value = song.price != null ? song.price : settingsCache.songPrice;
+            document.getElementById('s-rent-price').value = song.rentPrice != null ? song.rentPrice : '';
+            document.getElementById('s-audio').value = song.audio || '';
+            document.getElementById('s-audio-full').value = song.audioFull || '';
+            document.getElementById('s-audio-full-2').value = song.audioFull2 || '';
+            document.getElementById('s-audio-wav').value = song.audioWav || '';
+            document.getElementById('s-art').value = song.albumArt || '';
+            document.getElementById('s-lrc1').value = song.lrc1 || '';
+            document.getElementById('s-lrc2').value = song.lrc2 || '';
+            const pub = song.publishAt ? new Date(song.publishAt) : null;
+            if (pub && !Number.isNaN(pub.getTime())) {
+                const pad = n => String(n).padStart(2, '0');
+                document.getElementById('s-publish-at').value =
+                    pub.getFullYear() + '-' + pad(pub.getMonth()+1) + '-' + pad(pub.getDate()) +
+                    'T' + pad(pub.getHours()) + ':' + pad(pub.getMinutes());
+            } else {
+                document.getElementById('s-publish-at').value = '';
+            }
+            document.getElementById('s-hidden').checked = !!song.hidden;
+            // Luôn nạp lại full từ songFulls/{id} khi sửa (tránh form trống do Rules chặn list)
+            if (song && song.id) {
+                try {
+                    const f = await fetchSongFullById(song.id);
+                    if (f.audioFull) {
+                        document.getElementById('s-audio-full').value = f.audioFull;
+                        song.audioFull = f.audioFull;
+                    }
+                    if (f.audioFull2) {
+                        document.getElementById('s-audio-full-2').value = f.audioFull2;
+                        song.audioFull2 = f.audioFull2;
+                    }
+                    if (f.audioWav) {
+                        document.getElementById('s-audio-wav').value = f.audioWav;
+                        song.audioWav = f.audioWav;
+                    }
+                    const inCache = songsCache.find(x => x.id === song.id);
+                    if (inCache) {
+                        if (f.audioFull) inCache.audioFull = f.audioFull;
+                        if (f.audioFull2) inCache.audioFull2 = f.audioFull2;
+                        if (f.audioWav) inCache.audioWav = f.audioWav;
+                    }
+                } catch (e) {
+                    console.warn('fillSongForm fulls', e);
+                }
+            }
+        }
+
+        function clearSongForm() {
+            editingSongId = null;
+            ['s-id','s-name','s-artist','s-audio','s-audio-full','s-audio-full-2','s-audio-wav','s-art','s-lrc1','s-lrc2','s-rent-price','s-publish-at'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            const sidEl = document.getElementById('s-id');
+            if (sidEl) {
+                sidEl.readOnly = false;
+                sidEl.title = '';
+                sidEl.style.opacity = '';
+            }
+            document.getElementById('s-artist').value = 'XuanKen Official';
+            document.getElementById('s-art').value = 'https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/logoofficial.png';
+            document.getElementById('s-price').value = settingsCache.songPrice;
+            document.getElementById('s-hidden').checked = false;
+        }
+
+        function getFilteredSongs(filter) {
+            const q = String(filter || '').trim().toLowerCase();
+            return songsCache.filter(s => {
+                if (!q) return true;
+                return String(s.id).toLowerCase().includes(q)
+                    || String(s.name || '').toLowerCase().includes(q)
+                    || String(s.artist || '').toLowerCase().includes(q);
+            });
+        }
+
+        function renderSongsPagination(totalPages) {
+            const el = document.getElementById('songs-pagination');
+            if (!el) return;
+            if (totalPages <= 1) {
+                el.innerHTML = '';
+                return;
+            }
+            const maxButtons = window.innerWidth < 480 ? 3 : (window.innerWidth < 700 ? 5 : 7);
+            let html = `<button type="button" data-page="prev" ${songsPage <= 1 ? 'disabled' : ''}>‹</button>`;
+            let start = Math.max(1, songsPage - Math.floor(maxButtons / 2));
+            let end = Math.min(totalPages, start + maxButtons - 1);
+            start = Math.max(1, end - maxButtons + 1);
+            for (let p = start; p <= end; p++) {
+                html += `<button type="button" data-page="${p}" class="${p === songsPage ? 'active' : ''}">${p}</button>`;
+            }
+            html += `<button type="button" data-page="next" ${songsPage >= totalPages ? 'disabled' : ''}>›</button>`;
+            el.innerHTML = html;
+            el.querySelectorAll('button[data-page]').forEach(btn => {
+                btn.onclick = () => {
+                    const v = btn.getAttribute('data-page');
+                    if (v === 'prev') songsPage = Math.max(1, songsPage - 1);
+                    else if (v === 'next') songsPage = Math.min(totalPages, songsPage + 1);
+                    else songsPage = parseInt(v, 10) || 1;
+                    renderSongs(songsFilter, true);
+                };
+            });
+        }
+
+        function renderSongs(filter = '', keepPage = false) {
+            const tbody = document.getElementById('songs-tbody');
+            if (!keepPage) {
+                songsFilter = filter;
+                songsPage = 1;
+            }
+            const list = getFilteredSongs(songsFilter);
+            const totalPages = Math.max(1, Math.ceil(list.length / SONGS_PER_PAGE));
+            if (songsPage > totalPages) songsPage = totalPages;
+            const start = (songsPage - 1) * SONGS_PER_PAGE;
+            const pageList = list.slice(start, start + SONGS_PER_PAGE);
+
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="muted">Chưa có bài hát — thêm ở form phía trên</td></tr>`;
+                renderSongsPagination(0);
+                return;
+            }
+            tbody.innerHTML = pageList.map(s => `<tr style="${s.hidden ? 'opacity:0.6;' : ''}">
+                <td data-label="ID"><code>${escapeHtml(s.id)}</code></td>
+                <td data-label="Tên">${escapeHtml(s.name)}</td>
+                <td data-label="Ca sĩ">${escapeHtml(s.artist || '—')}</td>
+                <td data-label="Lượt nghe">${s.listenCount || 0}</td>
+                <td data-label="Giá">${s.price != null ? s.price : settingsCache.songPrice}</td>
+                <td data-label="Trạng thái">${s.hidden
+                    ? '<span class="badge-hidden"><i class="fa-solid fa-eye-slash"></i> Ẩn</span>'
+                    : '<span class="badge-visible"><i class="fa-solid fa-eye"></i> Hiện</span>'}</td>
+                <td data-label="Thao tác">
+                    <div class="row-actions">
+                        <button class="btn ${s.hidden ? 'btn-ok' : 'btn-warn'}" data-toggle-hide="${escapeHtml(s.id)}" title="${s.hidden ? 'Hiện lại bài' : 'Ẩn tạm thời'}">
+                            <i class="fa-solid ${s.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${s.hidden ? 'Hiện' : 'Ẩn'}
+                        </button>
+                        <button class="btn btn-ok" data-edit="${escapeHtml(s.id)}"><i class="fa-solid fa-pen"></i> Sửa</button>
+                        <button class="btn btn-danger" data-del="${escapeHtml(s.id)}"><i class="fa-solid fa-trash"></i> Xóa</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+
+            tbody.querySelectorAll('[data-edit]').forEach(btn => {
+                btn.onclick = async () => {
+                    const song = songsCache.find(x => x.id === btn.getAttribute('data-edit'));
+                    if (song) {
+                        await fillSongForm(song);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                };
+            });
+            tbody.querySelectorAll('[data-del]').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = btn.getAttribute('data-del');
+                    if (!confirm('Xóa bài "' + id + '" khỏi Firebase?')) return;
+                    await db().ref(dataPath('songs') + '/' + id).remove();
+                    try { await db().ref(dataPath('songFulls') + '/' + id).remove(); } catch (e) {}
+                    toast('Đã xóa ' + id);
+                    await loadSongs(true);
+                };
+            });
+            tbody.querySelectorAll('[data-toggle-hide]').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = btn.getAttribute('data-toggle-hide');
+                    const song = songsCache.find(x => x.id === id);
+                    if (!song) return;
+                    const next = !song.hidden;
+                    await db().ref(dataPath('songs') + '/' + id + '/hidden').set(next);
+                    toast(next ? ('Đã ẩn "' + id + '" — player không còn hiện') : ('Đã hiện lại "' + id + '"'));
+                    await loadSongs(true);
+                };
+            });
+            renderSongsPagination(totalPages);
+        }
+
+        function renderUsers(filter = '') {
+            const tbody = document.getElementById('users-tbody');
+            const q = filter.trim().toLowerCase();
+            const names = Object.keys(usersCache).sort().filter(n => !q || n.toLowerCase().includes(q));
+            if (!names.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="muted">Chưa có user</td></tr>`;
+                return;
+            }
+            const rankOpts = (cur) => {
+                const opts = [
+                    { v: 'member', l: 'Thành viên' },
+                    { v: 'vip', l: 'VIP' },
+                    { v: 'super_vip', l: 'SUPER VIP' },
+                    { v: 'admin', l: 'ADMIN' }
+                ];
+                return opts.map(o => `<option value="${o.v}" ${cur === o.v ? 'selected' : ''}>${o.l}</option>`).join('');
+            };
+            tbody.innerHTML = names.map(name => {
+                const a = usersCache[name];
+                const rank = a.rank || 'member';
+                return `<tr>
+                    <td data-label="Username"><b>${escapeHtml(name)}</b></td>
+                    <td data-label="Hạng">
+                        <select data-rank-user="${escapeHtml(name)}" class="rank-select">
+                            ${rankOpts(rank)}
+                        </select>
+                    </td>
+                    <td data-label="XK"><input type="number" min="0" value="${a.coins | 0}" data-user="${escapeHtml(name)}" class="coin-input"></td>
+                    <td data-label="Sở hữu" title="Thô: ${(a.owned || []).length}">${validOwnedCount(a.owned)}</td>
+                    <td data-label="Điểm danh">${escapeHtml(a.lastCheckin || '—')}</td>
+                    <td data-label="Thao tác">
+                        <div class="row-actions">
+                            <button class="btn btn-ok" data-save-user="${escapeHtml(name)}"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+                            <button class="btn btn-warn" data-gift="${escapeHtml(name)}"><i class="fa-solid fa-gift"></i> +50</button>
+                            <button class="btn ${a.banned ? 'btn-ok' : 'btn-danger'}" data-ban-user="${escapeHtml(name)}"><i class="fa-solid fa-ban"></i> ${a.banned ? 'Mở' : 'Khóa'}</button>
+                            <button class="btn btn-danger" data-del-user="${escapeHtml(name)}"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            tbody.querySelectorAll('[data-save-user]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-save-user');
+                    const input = tbody.querySelector('.coin-input[data-user="' + name.replace(/"/g, '') + '"]');
+                    const rankSel = tbody.querySelector('.rank-select[data-rank-user="' + name.replace(/"/g, '') + '"]');
+                    const coins = Math.max(0, parseInt(input.value, 10) || 0);
+                    const rank = (rankSel && rankSel.value) || 'member';
+                    const key = usersCache[name].key || sanitizeKey(name);
+                    await db().ref(dataPath('users') + '/' + key).update({ coins, rank });
+                    usersCache[name].coins = coins;
+                    usersCache[name].rank = rank;
+                    toast('Đã lưu ' + name + (rank !== 'member' ? ' · ' + rank.toUpperCase() : ''));
+                    refreshStats();
+                };
+            });
+            tbody.querySelectorAll('[data-gift]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-gift');
+                    const key = usersCache[name].key || sanitizeKey(name);
+                    const coins = (usersCache[name].coins | 0) + 50;
+                    await db().ref(dataPath('users') + '/' + key + '/coins').set(coins);
+                    usersCache[name].coins = coins;
+                    toast('+50 XK ' + name);
+                    renderUsers(document.getElementById('user-search').value);
+                    refreshStats();
+                };
+            });
+            tbody.querySelectorAll('[data-del-user]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-del-user');
+                    if (!confirm('Xóa profile "' + name + '"?\n(Auth account trên Firebase Console vẫn còn — xóa thêm ở Authentication nếu cần)')) return;
+                    const key = usersCache[name].key || sanitizeKey(name);
+                    await db().ref(dataPath('users') + '/' + key).remove();
+                    try {
+                        await db().ref(dataPath('usernames') + '/' + sanitizeKey(name)).remove();
+                    } catch (e) {}
+                    delete usersCache[name];
+                    toast('Đã xóa ' + name);
+                    renderUsers(document.getElementById('user-search').value);
+                    refreshStats();
+                };
+            });
+            tbody.querySelectorAll('[data-ban-user]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-ban-user');
+                    const u = usersCache[name];
+                    if (!u) return;
+                    const next = !u.banned;
+                    const reason = next ? (prompt('Lý do khóa (tuỳ chọn):') || '') : '';
+                    const key = u.key || sanitizeKey(name);
+                    await db().ref(dataPath('users') + '/' + key).update({ banned: next, banReason: reason });
+                    u.banned = next;
+                    toast(next ? ('Đã khóa ' + name) : ('Đã mở khóa ' + name));
+                    renderUsers(document.getElementById('user-search').value);
+                };
+            });
+        }
+
+        document.getElementById('save-song-btn').onclick = async () => {
+            const id = document.getElementById('s-id').value.trim();
+            const name = document.getElementById('s-name').value.trim();
+            const audio = document.getElementById('s-audio').value.trim();
+            if (!id || !name || !audio) {
+                toast('Cần ID, tên bài và link audio');
+                return;
+            }
+            if (/[.#$\[\]/]/.test(id)) {
+                toast('ID không được chứa . # $ [ ] /');
+                return;
+            }
+            const audioFull = document.getElementById('s-audio-full').value.trim();
+            const audioFull2 = document.getElementById('s-audio-full-2').value.trim();
+            const audioWav = document.getElementById('s-audio-wav').value.trim();
+            const rentRaw = document.getElementById('s-rent-price').value.trim();
+            const pubLocal = document.getElementById('s-publish-at').value.trim();
+            let publishAt = null;
+            if (pubLocal) {
+                const d = new Date(pubLocal);
+                if (!Number.isNaN(d.getTime())) publishAt = d.toISOString();
+            }
+            const originalId = editingSongId;
+            const isRename = originalId && originalId !== id;
+
+            if (isRename) {
+                if (!confirm('Đổi ID bài từ "' + originalId + '" → "' + id + '"?\n\nHệ thống sẽ chuyển sở hữu (owned) sang ID mới. Chỉ đổi ID khi thật sự cần — sửa link audio thì giữ nguyên ID.')) {
+                    return;
+                }
+            }
+
+            if (isRename && songsCache.some(s => s.id === id)) {
+                toast('ID mới "' + id + '" đã tồn tại — chọn ID khác');
+                return;
+            }
+
+            const countSourceId = originalId || id;
+            let liveCount = 0;
+            try {
+                const snap = await db().ref(dataPath('songs') + '/' + countSourceId + '/listenCount').once('value');
+                liveCount = Number(snap.val()) || 0;
+            } catch (e) {}
+            const cacheCount = (songsCache.find(s => s.id === countSourceId) || {}).listenCount || 0;
+            const payload = {
+                id,
+                name,
+                artist: document.getElementById('s-artist').value.trim() || 'XuanKen Official',
+                audio,
+                albumArt: document.getElementById('s-art').value.trim() || 'https://raw.githubusercontent.com/nokiapro/xuankenofficial/main/logoofficial.png',
+                lrc1: document.getElementById('s-lrc1').value,
+                lrc2: document.getElementById('s-lrc2').value,
+                price: Math.max(0, parseInt(document.getElementById('s-price').value, 10) || 0),
+                rentPrice: rentRaw === '' ? null : Math.max(0, parseInt(rentRaw, 10) || 0),
+                publishAt,
+                hidden: !!document.getElementById('s-hidden').checked,
+                listenCount: Math.max(liveCount, cacheCount, 0)
+            };
+            // Link full tách riêng → songFulls (không public trong songs)
+            const fullPayload = {
+                audioFull: audioFull || null,
+                audioFull2: audioFull2 || null,
+                audioWav: audioWav || null
+            };
+
+            await db().ref(dataPath('songs') + '/' + id).set(payload);
+            // Ghi songFulls: có link thì set; form trống thì GIỮ full cũ (không xóa nhầm)
+            if (audioFull || audioFull2 || audioWav) {
+                let prev = {};
+                try {
+                    const ps = await db().ref(dataPath('songFulls') + '/' + id).once('value');
+                    prev = ps.val() || {};
+                } catch (e) {}
+                await db().ref(dataPath('songFulls') + '/' + id).set({
+                    audioFull: audioFull || prev.audioFull || null,
+                    audioFull2: audioFull2 || prev.audioFull2 || null,
+                    audioWav: audioWav || prev.audioWav || null
+                });
+            }
+            // Dọn link full cũ nếu còn sót trong node songs
+            try {
+                await db().ref(dataPath('songs') + '/' + id).update({ audioFull: null, audioFull2: null, audioWav: null });
+            } catch (e) {}
+
+            if (isRename) {
+                // 1) Chuyển songFulls old → new (nếu form không nhập full mới)
+                try {
+                    const oldFullSnap = await db().ref(dataPath('songFulls') + '/' + originalId).once('value');
+                    const oldFull = oldFullSnap.val() || {};
+                    const newFullSnap = await db().ref(dataPath('songFulls') + '/' + id).once('value');
+                    const newFull = newFullSnap.val() || {};
+                    const mergedFull = {
+                        audioFull: newFull.audioFull || audioFull || oldFull.audioFull || null,
+                        audioFull2: newFull.audioFull2 || audioFull2 || oldFull.audioFull2 || null,
+                        audioWav: newFull.audioWav || audioWav || oldFull.audioWav || null
+                    };
+                    if (mergedFull.audioFull || mergedFull.audioFull2 || mergedFull.audioWav) {
+                        await db().ref(dataPath('songFulls') + '/' + id).set(mergedFull);
+                    }
+                } catch (e) { console.warn('migrate songFulls', e); }
+
+                // 2) Lưu alias ID cũ → ID mới (client vẫn nhận diện bài đã mua)
+                try {
+                    await db().ref(dataPath('songIdAliases') + '/' + originalId).set({
+                        to: id,
+                        at: Date.now()
+                    });
+                    // Nếu ID mới từng là alias của ai đó, dọn
+                    await db().ref(dataPath('songIdAliases') + '/' + id).remove();
+                } catch (e) { console.warn('songIdAliases', e); }
+
+                // 3) Chuyển owned / rentals / ownedMap / listenedSongs mọi user
+                let migratedUsers = 0;
+                const oid = String(originalId);
+                const oidLow = oid.toLowerCase();
+                const nid = String(id);
+                try {
+                    const usersSnap = await db().ref(dataPath('users')).once('value');
+                    const users = usersSnap.val() || {};
+                    const tasks = [];
+                    Object.keys(users).forEach(ukey => {
+                        const u = users[ukey] || {};
+                        let changed = false;
+                        const patch = {};
+
+                        // owned: array hoặc object
+                        let owned = parseOwnedField(u.owned);
+                        if (owned.some(x => x === oid || x.toLowerCase() === oidLow)) {
+                            owned = owned.map(x => (x === oid || x.toLowerCase() === oidLow) ? nid : x);
+                            const seen = new Set();
+                            owned = owned.filter(x => {
+                                const low = String(x).toLowerCase();
+                                if (seen.has(low)) return false;
+                                seen.add(low);
+                                return !!x;
+                            });
+                            patch.owned = owned;
+                            changed = true;
+                        }
+
+                        // ownedMap
+                        let ownedMap = (u.ownedMap && typeof u.ownedMap === 'object') ? { ...u.ownedMap } : {};
+                        let mapChanged = false;
+                        Object.keys(ownedMap).forEach(k => {
+                            if (k === oid || k.toLowerCase() === oidLow) {
+                                delete ownedMap[k];
+                                mapChanged = true;
+                            }
+                        });
+                        if (mapChanged || changed) {
+                            ownedMap[nid] = true;
+                            // rebuild from owned if we have it
+                            if (patch.owned) {
+                                ownedMap = {};
+                                patch.owned.forEach(x => { ownedMap[String(x)] = true; });
+                            }
+                            patch.ownedMap = ownedMap;
+                            changed = true;
+                        }
+
+                        // rentals
+                        if (u.rentals && typeof u.rentals === 'object') {
+                            const rentals = { ...u.rentals };
+                            let rChanged = false;
+                            let exp = null;
+                            Object.keys(rentals).forEach(k => {
+                                if (k === oid || k.toLowerCase() === oidLow) {
+                                    exp = rentals[k];
+                                    delete rentals[k];
+                                    rChanged = true;
+                                }
+                            });
+                            if (rChanged) {
+                                if (exp != null) rentals[nid] = exp;
+                                patch.rentals = rentals;
+                                changed = true;
+                            }
+                        }
+
+                        // listenedSongs
+                        if (u.listenedSongs && typeof u.listenedSongs === 'object') {
+                            const listened = { ...u.listenedSongs };
+                            let lChanged = false;
+                            let lv = null;
+                            Object.keys(listened).forEach(k => {
+                                if (k === oid || k.toLowerCase() === oidLow) {
+                                    lv = listened[k];
+                                    delete listened[k];
+                                    lChanged = true;
+                                }
+                            });
+                            if (lChanged) {
+                                if (lv != null) listened[nid] = lv;
+                                patch.listenedSongs = listened;
+                                changed = true;
+                            }
+                        }
+
+                        // favorites / likes / dislikes / myPlaylist
+                        ['favorites', 'likes', 'dislikes', 'myPlaylist'].forEach(field => {
+                            if (!Array.isArray(u[field])) return;
+                            let arr = u[field].map(String);
+                            if (!arr.some(x => x === oid || x.toLowerCase() === oidLow)) return;
+                            arr = arr.map(x => (x === oid || x.toLowerCase() === oidLow) ? nid : x);
+                            const seen = new Set();
+                            arr = arr.filter(x => {
+                                const low = x.toLowerCase();
+                                if (seen.has(low)) return false;
+                                seen.add(low);
+                                return true;
+                            });
+                            patch[field] = arr;
+                            changed = true;
+                        });
+
+                        if (changed) {
+                            migratedUsers++;
+                            tasks.push(db().ref(dataPath('users') + '/' + ukey).update(patch));
+                        }
+                    });
+                    await Promise.all(tasks);
+                } catch (e) {
+                    console.warn('migrate owned on rename', e);
+                }
+
+                // 4) Xóa bài + full cũ
+                await db().ref(dataPath('songs') + '/' + originalId).remove();
+                try { await db().ref(dataPath('songFulls') + '/' + originalId).remove(); } catch (e) {}
+
+                toast('Đã đổi ID ' + originalId + ' → ' + id + ' · chuyển sở hữu ' + migratedUsers + ' user · giữ ' + payload.listenCount + ' nghe');
+            } else {
+                toast('Đã lưu bài ' + id + ' (giữ ' + payload.listenCount + ' lượt nghe)');
+            }
+
+            editingSongId = null;
+            await loadSongs(true);
+            const saved = songsCache.find(s => s.id === id);
+            if (saved) fillSongForm(saved);
+            else clearSongForm();
+        };
+
+        document.getElementById('clear-song-form-btn').onclick = () => clearSongForm();
+        document.getElementById('song-search').oninput = e => renderSongs(e.target.value);
+        document.getElementById('user-search').oninput = e => renderUsers(e.target.value);
+
+        const cleanupOwnedBtn = document.getElementById('cleanup-owned-btn');
+        if (cleanupOwnedBtn) {
+            cleanupOwnedBtn.onclick = async () => {
+                const logEl = document.getElementById('cleanup-owned-log');
+                try { await loadSongIdAliasesAdmin(); } catch (e) {}
+                const songIds = getSongIdSet();
+                if (!songIds.size) {
+                    toast('Chưa load được list bài hát — thử F5');
+                    return;
+                }
+                const names = Object.keys(usersCache);
+                if (!names.length) {
+                    toast('Chưa có user');
+                    return;
+                }
+                let previewOrphans = 0, previewDupes = 0, usersAffected = 0;
+                names.forEach(n => {
+                    const s = sanitizeOwnedList(usersCache[n].owned, songIds);
+                    if (s.removed > 0) {
+                        usersAffected++;
+                        previewOrphans += s.orphans;
+                        previewDupes += s.dupes;
+                    }
+                });
+                if (usersAffected === 0) {
+                    toast('Không có ID mồ côi / trùng cần dọn');
+                    if (logEl) {
+                        logEl.style.display = 'block';
+                        logEl.textContent = 'OK — owned đã sạch.';
+                    }
+                    return;
+                }
+                if (!confirm(
+                    'Dọn owned cho ' + usersAffected + ' user?\n' +
+                    '· ID mồ côi (bài đã xóa): ' + previewOrphans + '\n' +
+                    '· ID trùng: ' + previewDupes + '\n\n' +
+                    'Thao tác ghi đè mảng owned trên Firebase.'
+                )) return;
+
+                cleanupOwnedBtn.disabled = true;
+                if (logEl) {
+                    logEl.style.display = 'block';
+                    logEl.textContent = 'Đang dọn...\n';
+                }
+                let fixedUsers = 0, totalRemoved = 0;
+                try {
+                    for (const name of names) {
+                        const u = usersCache[name];
+                        const s = sanitizeOwnedList(u.owned, songIds);
+                        if (s.removed === 0) continue;
+                        const key = u.key || sanitizeKey(name);
+                        const om = {};
+                        s.cleaned.forEach(id => { om[String(id)] = true; });
+                        await db().ref(dataPath('users') + '/' + key).update({ owned: s.cleaned, ownedMap: om });
+                        u.owned = s.cleaned;
+                        fixedUsers++;
+                        totalRemoved += s.removed;
+                        if (logEl) {
+                            logEl.textContent += name + ': −' + s.removed +
+                                ' (mồ côi ' + s.orphans + ', trùng ' + s.dupes + ') → còn ' + s.cleaned.length + '\n';
+                            logEl.scrollTop = logEl.scrollHeight;
+                        }
+                    }
+                    try { await loadUsers(); } catch (eLoad) { refreshStats(); renderUsers(document.getElementById('user-search').value); }
+                    toast('Đã dọn ' + fixedUsers + ' user, xóa ' + totalRemoved + ' ID rác');
+                    if (logEl) logEl.textContent += '\nXong. F5 sẽ không còn hiện rác nếu player không đẩy lại ID cũ.';
+                } catch (e) {
+                    console.error('cleanup owned', e);
+                    toast('Lỗi dọn: ' + (e && e.message ? e.message : e));
+                    if (logEl) logEl.textContent += '\nLỗi: ' + (e && e.message ? e.message : e);
+                } finally {
+                    cleanupOwnedBtn.disabled = false;
+                }
+            };
+        }
+
+        function songToExportObj(s) {
+            return {
+                id: s.id || '',
+                name: s.name || '',
+                artist: s.artist || '',
+                audio: s.audio || '',
+                audioFull: s.audioFull || '',
+                audioFull2: s.audioFull2 || '',
+                audioWav: s.audioWav || '',
+                albumArt: s.albumArt || '',
+                lrc1: s.lrc1 || '',
+                lrc2: s.lrc2 || '',
+                price: s.price != null ? Number(s.price) : 0,
+                rentPrice: s.rentPrice != null ? Number(s.rentPrice) : null,
+                publishAt: s.publishAt || null,
+                hidden: !!s.hidden,
+                listenCount: Number(s.listenCount) || 0
+            };
+        }
+
+        function downloadJsonFile(filename, dataObj) {
+            const text = JSON.stringify(dataObj, null, 2);
+            const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+                a.remove();
+            }, 500);
+        }
+
+        function parseSongsImport(raw) {
+            let data = raw;
+            if (typeof raw === 'string') {
+                const t = raw.trim();
+                if (!t) throw new Error('JSON trống');
+                data = JSON.parse(t);
+            }
+            let list = [];
+            if (Array.isArray(data)) {
+                list = data;
+            } else if (data && typeof data === 'object') {
+                if (Array.isArray(data.songs)) list = data.songs;
+                else list = Object.keys(data).map(k => {
+                    const v = data[k];
+                    if (v && typeof v === 'object') return { ...v, id: v.id || k };
+                    return null;
+                }).filter(Boolean);
+            } else {
+                throw new Error('Định dạng JSON không hợp lệ (cần mảng hoặc object)');
+            }
+            return list.map(item => {
+                if (!item || typeof item !== 'object') return null;
+                const id = String(item.id || '').trim();
+                if (!id || /[.#$\[\]/]/.test(id)) return null;
+                return {
+                    id,
+                    name: String(item.name || id).trim(),
+                    artist: String(item.artist || '').trim(),
+                    audio: String(item.audio || '').trim(),
+                    audioFull: String(item.audioFull || '').trim() || null,
+                    audioFull2: String(item.audioFull2 || '').trim() || null,
+                    audioWav: String(item.audioWav || '').trim() || null,
+                    albumArt: String(item.albumArt || '').trim(),
+                    lrc1: String(item.lrc1 || ''),
+                    lrc2: String(item.lrc2 || ''),
+                    price: item.price != null ? Math.max(0, Number(item.price) || 0) : (settingsCache.songPrice || 0),
+                    rentPrice: item.rentPrice != null && item.rentPrice !== '' ? Math.max(0, Number(item.rentPrice) || 0) : null,
+                    publishAt: item.publishAt || null,
+                    hidden: !!item.hidden,
+                    listenCount: Math.max(0, Number(item.listenCount) || 0)
+                };
+            }).filter(s => s && s.id && s.name && s.audio);
+        }
+
+        async function importSongsList(list) {
+            if (!list.length) {
+                toast('Không có bài hợp lệ để nhập (cần id, name, audio)');
+                return;
+            }
+            let updated = 0;
+            let added = 0;
+            for (const song of list) {
+                let liveCount = 0;
+                try {
+                    const snap = await db().ref(dataPath('songs') + '/' + song.id + '/listenCount').once('value');
+                    liveCount = Number(snap.val()) || 0;
+                } catch (e) {}
+                const { audioFull, audioFull2, audioWav, ...publicFields } = song;
+                const payload = {
+                    ...publicFields,
+                    listenCount: Math.max(liveCount, Number(song.listenCount) || 0)
+                };
+                delete payload.audioFull;
+                delete payload.audioFull2;
+                delete payload.audioWav;
+                const existed = songsCache.some(s => s.id === song.id);
+                await db().ref(dataPath('songs') + '/' + song.id).set(payload);
+                if (audioFull || audioFull2 || audioWav) {
+                    await db().ref(dataPath('songFulls') + '/' + song.id).set({
+                        audioFull: audioFull || null,
+                        audioFull2: audioFull2 || null,
+                        audioWav: audioWav || null
+                    });
+                } else {
+                    try { await db().ref(dataPath('songFulls') + '/' + song.id).remove(); } catch (e) {}
+                }
+                if (existed) updated++;
+                else added++;
+            }
+            await loadSongs();
+            toast('Nhập xong: +' + added + ' mới, cập nhật ' + updated + ' bài (tổng ' + list.length + ')');
+        }
+
+        const exportSongsBtn = document.getElementById('export-songs-btn');
+        if (exportSongsBtn) {
+            exportSongsBtn.onclick = async () => {
+                try {
+                    toast('Đang tải list nhạc...');
+                    const snap = await db().ref(dataPath('songs')).once('value');
+                    const obj = snap.val() || {};
+                    let fulls = {};
+                    try {
+                        const fs = await db().ref(dataPath('songFulls')).once('value');
+                        fulls = fs.val() || {};
+                    } catch (e) {}
+                    const list = Object.keys(obj).map(id => {
+                        const s = obj[id] || {};
+                        const f = fulls[id] || {};
+                        return songToExportObj({
+                            id: String(s.id || id),
+                            name: s.name || id,
+                            artist: s.artist || '',
+                            audio: s.audio || '',
+                            audioFull: f.audioFull || s.audioFull || '',
+                            audioFull2: f.audioFull2 || s.audioFull2 || '',
+                            albumArt: s.albumArt || '',
+                            lrc1: s.lrc1 || '',
+                            lrc2: s.lrc2 || '',
+                            price: s.price,
+                            rentPrice: s.rentPrice,
+                            publishAt: s.publishAt || null,
+                            hidden: !!s.hidden,
+                            listenCount: Number(s.listenCount) || 0
+                        });
+                    }).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'vi', { sensitivity: 'base' }));
+
+                    if (!list.length) {
+                        toast('Chưa có bài hát nào để xuất');
+                        return;
+                    }
+
+                    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+                    const filename = 'xuanken-songs-' + stamp + '.json';
+                    downloadJsonFile(filename, list);
+                    toast('Đã xuất ' + list.length + ' bài → ' + filename);
+                } catch (e) {
+                    console.error('export songs', e);
+                    toast('Lỗi xuất: ' + (e && e.message ? e.message : e));
+                }
+            };
+        }
+
+        const importSongsBtn = document.getElementById('import-songs-btn');
+        const importSongsFile = document.getElementById('import-songs-file');
+        if (importSongsBtn && importSongsFile) {
+            importSongsBtn.onclick = () => importSongsFile.click();
+            importSongsFile.onchange = async () => {
+                const file = importSongsFile.files && importSongsFile.files[0];
+                importSongsFile.value = '';
+                if (!file) return;
+                try {
+                    const text = await file.text();
+                    const list = parseSongsImport(text);
+                    if (!confirm('Nhập ' + list.length + ' bài từ file "' + file.name + '"?\nBài trùng ID sẽ được cập nhật.')) return;
+                    toast('Đang nhập...');
+                    await importSongsList(list);
+                } catch (e) {
+                    console.error('import songs file', e);
+                    toast('Lỗi nhập file: ' + (e && e.message ? e.message : e));
+                }
+            };
+        }
+
+        const importSongsPasteBtn = document.getElementById('import-songs-paste-btn');
+        if (importSongsPasteBtn) {
+            importSongsPasteBtn.onclick = async () => {
+                const ta = document.getElementById('import-songs-textarea');
+                const raw = (ta && ta.value || '').trim();
+                if (!raw) {
+                    toast('Dán JSON vào ô trước');
+                    if (ta) ta.focus();
+                    return;
+                }
+                try {
+                    const list = parseSongsImport(raw);
+                    if (!confirm('Nhập ' + list.length + ' bài từ ô JSON?\nBài trùng ID sẽ được cập nhật.')) return;
+                    toast('Đang nhập...');
+                    await importSongsList(list);
+                } catch (e) {
+                    console.error('import songs paste', e);
+                    toast('Lỗi JSON: ' + (e && e.message ? e.message : e));
+                }
+            };
+        }
+
+        document.getElementById('save-settings-btn').onclick = async () => {
+            settingsCache.songPrice = Math.max(0, parseInt(document.getElementById('set-song-price').value, 10) || 0);
+            settingsCache.checkinReward = Math.max(0, parseInt(document.getElementById('set-checkin').value, 10) || 0);
+            settingsCache.starterCoins = Math.max(0, parseInt(document.getElementById('set-starter').value, 10) || 0);
+            settingsCache.requirePin = !!document.getElementById('set-require-pin').checked;
+            settingsCache.allowRegister = !!document.getElementById('set-allow-register').checked;
+            settingsCache.siteBanner = (document.getElementById('set-site-banner') && document.getElementById('set-site-banner').value || '').trim();
+            settingsCache.flashSalePercent = Math.max(0, Math.min(90, parseInt(document.getElementById('set-flash-pct') && document.getElementById('set-flash-pct').value, 10) || 0));
+            settingsCache.inviteReward = Math.max(0, parseInt(document.getElementById('set-invite-reward') && document.getElementById('set-invite-reward').value, 10) || 0);
+            const fu = document.getElementById('set-flash-until') && document.getElementById('set-flash-until').value;
+            settingsCache.flashSaleUntil = fu ? new Date(fu).toISOString() : '';
+            const bc = document.getElementById('set-broadcast') && document.getElementById('set-broadcast').value.trim();
+            if (bc) {
+                await db().ref('settings/broadcast').set({ msg: bc, at: Date.now() });
+                document.getElementById('set-broadcast').value = '';
+            }
+            settingsCache.siteName = (document.getElementById('set-site-name').value || '').trim() || DEFAULT_SETTINGS.siteName;
+            if (document.getElementById('set-site-title')) settingsCache.siteTitle = (document.getElementById('set-site-title').value || '').trim();
+            settingsCache.siteIcon = (document.getElementById('set-site-icon').value || '').trim() || DEFAULT_SETTINGS.siteIcon;
+            settingsCache.sitePrefix = (document.getElementById('set-site-prefix').value || '').trim().replace(/^\/+|\/+$/g, '').replace(/[.#$\[\]]/g, '_');
+            await db().ref('settings').update({
+                songPrice: settingsCache.songPrice,
+                checkinReward: settingsCache.checkinReward,
+                starterCoins: settingsCache.starterCoins,
+                siteName: settingsCache.siteName,
+                siteTitle: settingsCache.siteTitle || settingsCache.siteName || '',
+                siteIcon: settingsCache.siteIcon,
+                sitePrefix: settingsCache.sitePrefix,
+                requirePin: settingsCache.requirePin !== false,
+                allowRegister: settingsCache.allowRegister !== false
+            });
+            applyBranding();
+            toast('Đã lưu cài đặt Firebase');
+            try {
+                await loadSongs();
+                await loadUsers();
+            } catch (e) {
+                console.warn('Reload after prefix change', e);
+            }
+        };
+
+        const factoryBtn = document.getElementById('factory-reset-btn');
+        if (factoryBtn) factoryBtn.onclick = async () => {
+            const confirmEl = document.getElementById('factory-confirm-input');
+            const logEl = document.getElementById('factory-reset-log');
+            const typed = (confirmEl && confirmEl.value || '').trim();
+            if (typed !== 'RESET') {
+                toast('Gõ đúng chữ RESET để xác nhận');
+                if (confirmEl) confirmEl.focus();
+                return;
+            }
+            const wipeSongs = !!(document.getElementById('factory-wipe-songs') || {}).checked;
+            const wipeUsers = !!(document.getElementById('factory-wipe-users') || {}).checked;
+            const wipeExtras = !!(document.getElementById('factory-wipe-extras') || {}).checked;
+            const resetSettings = !!(document.getElementById('factory-reset-settings') || {}).checked;
+            if (!wipeSongs && !wipeUsers && !wipeExtras && !resetSettings) {
+                toast('Chọn ít nhất 1 mục để xóa');
+                return;
+            }
+            const summary = [
+                wipeSongs ? 'songs' : null,
+                wipeUsers ? 'users+usernames' : null,
+                wipeExtras ? 'prices+giftCodes+chat+thumbs+broadcast+weeklyListens' : null,
+                resetSettings ? 'registrationCount=0' : null
+            ].filter(Boolean).join(', ');
+            if (!confirm('CẢNH BÁO: Xóa vĩnh viễn dữ liệu Firebase?\n\nSẽ xóa: ' + summary + '\n\nKhông thể hoàn tác. Tiếp tục?')) return;
+            if (!confirm('Xác nhận lần 2: bạn chắc chắn muốn RESET TOÀN BỘ?')) return;
+
+            factoryBtn.disabled = true;
+            const lines = [];
+            const log = (msg) => {
+                lines.push(msg);
+                if (logEl) {
+                    logEl.style.display = 'block';
+                    logEl.textContent = lines.join('\n');
+                }
+            };
+            log('Bắt đầu factory reset...');
+            setToolsProgress(true, 5, 'Đang xóa...');
+
+            const safeRemove = async (path, label) => {
+                try {
+                    await db().ref(path).remove();
+                    log('✓ Đã xóa: ' + label + ' (' + path + ')');
+                    return true;
+                } catch (e) {
+                    log('✗ Lỗi xóa ' + label + ': ' + (e.code || e.message || e));
+                    return false;
+                }
+            };
+
+            try {
+                let step = 0;
+                const total = 10;
+                const tick = (label) => {
+                    step++;
+                    setToolsProgress(true, (step / total) * 100, label);
+                };
+
+                if (wipeUsers) {
+                    tick('Xóa users...');
+                    await safeRemove(dataPath('users'), 'users');
+                    tick('Xóa usernames...');
+                    await safeRemove(dataPath('usernames'), 'usernames');
+                    usersCache = {};
+                }
+                if (wipeSongs) {
+                    tick('Xóa songs...');
+                    await safeRemove(dataPath('songs'), 'songs');
+                    await safeRemove(dataPath('songFulls'), 'songFulls');
+                    songsCache = [];
+                }
+                if (wipeExtras) {
+                    tick('Xóa prices / giftCodes / chat...');
+                    await safeRemove(dataPath('prices'), 'prices');
+                    await safeRemove(dataPath('giftCodes'), 'giftCodes');
+                    await safeRemove('chat', 'chat');
+                    await safeRemove('settings/progressThumbs', 'progressThumbs');
+                    await safeRemove('settings/broadcast', 'broadcast');
+                    await safeRemove('settings/chatMutes', 'chatMutes');
+                    await safeRemove('weeklyListens', 'weeklyListens');
+                    await safeRemove('weeklyListensMeta', 'weeklyListensMeta');
+                }
+                if (resetSettings) {
+                    tick('Reset registrationCount...');
+                    try {
+                        await db().ref('settings/registrationCount').set(0);
+                        if (settingsCache) settingsCache.registrationCount = 0;
+                        const el = document.getElementById('set-registration-count');
+                        if (el) el.value = '0';
+                        log('✓ registrationCount = 0');
+                    } catch (e) {
+                        log('✗ Lỗi reset settings: ' + (e.code || e.message || e));
+                    }
+                }
+
+                setToolsProgress(true, 100, 'Hoàn tất');
+                log('');
+                log('=== XONG ===');
+                log('Bước tiếp theo (bắt buộc):');
+                log('1. Firebase Console → Authentication → xóa các user (trừ admin nếu cần)');
+                log('2. Mở clear-local.html trên PC và trên điện thoại để xóa localStorage');
+                log('3. Hard refresh trang player (Ctrl+F5)');
+                toast('Đã reset Firebase RTDB');
+                try { renderSongs(''); } catch (e) {}
+                try { renderUsers(''); } catch (e) {}
+                try { refreshStats(); } catch (e) {}
+            } catch (err) {
+                log('LỖI: ' + (err.code || err.message || err));
+                toast('Reset lỗi: ' + (err.message || err));
+            } finally {
+                factoryBtn.disabled = false;
+                setTimeout(() => setToolsProgress(false, 0, ''), 2500);
+            }
+        };
+        function probeAudioUrl(url, timeoutMs) {
+            return new Promise((resolve) => {
+                const a = new Audio();
+                let done = false;
+                const finish = (ok, detail) => {
+                    if (done) return;
+                    done = true;
+                    try { a.removeAttribute('src'); a.load(); } catch (e) {}
+                    resolve({ ok, detail });
+                };
+                const to = setTimeout(() => finish(false, 'timeout'), timeoutMs || 10000);
+                a.preload = 'metadata';
+                a.onloadedmetadata = () => { clearTimeout(to); finish(true, Math.round(a.duration || 0) + 's'); };
+                a.onerror = () => { clearTimeout(to); finish(false, 'error'); };
+                a.src = url;
+            });
+        }
+        function setToolsProgress(show, pct, label) {
+            const wrap = document.getElementById('tools-progress-wrap');
+            const bar = document.getElementById('tools-progress-bar');
+            const pctEl = document.getElementById('tools-progress-pct');
+            const lab = document.getElementById('tools-progress-label');
+            if (!wrap) return;
+            wrap.style.display = show ? 'block' : 'none';
+            if (bar) bar.style.width = Math.max(0, Math.min(100, pct || 0)) + '%';
+            if (pctEl) pctEl.textContent = Math.round(pct || 0) + '%';
+            if (lab && label) lab.textContent = label;
+        }
+        const deadBtn = document.getElementById('check-dead-links-btn');
+        if (deadBtn) deadBtn.onclick = async () => {
+            const report = document.getElementById('dead-link-report');
+            report.style.display = 'block';
+            report.textContent = 'Đang kiểm tra...';
+            const jobs = [];
+            for (const s of songsCache) {
+                for (const [label, url] of [['demo', s.audio], ['full', s.audioFull], ['full2', s.audioFull2]]) {
+                    if (url) jobs.push({ id: s.id, label, url });
+                }
+            }
+            if (!jobs.length) {
+                report.textContent = 'Không có link';
+                toast('Không có link');
+                return;
+            }
+            deadBtn.disabled = true;
+            const lines = [];
+            for (let i = 0; i < jobs.length; i++) {
+                const j = jobs[i];
+                setToolsProgress(true, ((i) / jobs.length) * 100, 'Kiểm tra ' + j.id + ' (' + j.label + ')...');
+                const r = await probeAudioUrl(j.url, 12000);
+                if (r.ok) lines.push(j.id + ' ' + j.label + ': OK (' + r.detail + ')');
+                else lines.push(j.id + ' ' + j.label + ': LỖI (' + r.detail + ') — ' + j.url);
+                report.textContent = lines.join('\n');
+                setToolsProgress(true, ((i + 1) / jobs.length) * 100, 'Đã xong ' + (i + 1) + '/' + jobs.length);
+            }
+            setToolsProgress(true, 100, 'Hoàn tất');
+            deadBtn.disabled = false;
+            toast('Xong kiểm tra link');
+            setTimeout(() => setToolsProgress(false, 0, ''), 2000);
+        };
+
+        const migrateFullsBtn = document.getElementById('migrate-fulls-btn');
+        if (migrateFullsBtn) migrateFullsBtn.onclick = async () => {
+            if (!confirm('Chuyển toàn bộ audioFull / audioFull2 từ node songs sang songFulls và xóa khỏi songs?\n\nSau đó gắn Firebase Rules để chỉ user đã mua/thuê đọc được songFulls.')) return;
+            migrateFullsBtn.disabled = true;
+            try {
+                const snap = await db().ref(dataPath('songs')).once('value');
+                const obj = snap.val() || {};
+                const ids = Object.keys(obj);
+                let moved = 0;
+                let skipped = 0;
+                for (let i = 0; i < ids.length; i++) {
+                    const id = ids[i];
+                    const s = obj[id] || {};
+                    setToolsProgress(true, ((i) / Math.max(ids.length, 1)) * 100, 'Migrate ' + id + '...');
+                    const af = (s.audioFull || '').trim();
+                    const af2 = (s.audioFull2 || '').trim();
+                    if (!af && !af2) {
+                        skipped++;
+                        continue;
+                    }
+                    let existing = {};
+                    try {
+                        const fs = await db().ref(dataPath('songFulls') + '/' + id).once('value');
+                        existing = fs.val() || {};
+                    } catch (e) {}
+                    await db().ref(dataPath('songFulls') + '/' + id).set({
+                        audioFull: af || existing.audioFull || null,
+                        audioFull2: af2 || existing.audioFull2 || null
+                    });
+                    await db().ref(dataPath('songs') + '/' + id).update({ audioFull: null, audioFull2: null });
+                    moved++;
+                }
+                setToolsProgress(true, 100, 'Hoàn tất');
+                await loadSongs(true);
+                toast('Đã tách ' + moved + ' bài sang songFulls (bỏ qua ' + skipped + ' bài không có full)');
+            } catch (e) {
+                console.error(e);
+                toast('Migrate lỗi: ' + (e.message || e));
+            }
+            migrateFullsBtn.disabled = false;
+            setTimeout(() => setToolsProgress(false, 0, ''), 2000);
+        };
+
+        function switchAdminTab(name) {
+            const tabName = String(name || 'songs');
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tabName);
+            });
+            document.querySelectorAll('.panel').forEach(p => {
+                const id = p.id || '';
+                const match = id === ('panel-' + tabName);
+                p.classList.toggle('active', match);
+            });
+            if (tabName === 'settings') {
+                try { if (typeof loadGiftCodes === 'function') loadGiftCodes(); } catch (e) {}
+                try { if (typeof loadThumbAdmin === 'function') loadThumbAdmin(); } catch (e) {}
+            }
+            if (tabName === 'users') {
+                try { if (typeof loadUsers === 'function') loadUsers(); } catch (e) {}
+            }
+            if (tabName === 'songs') {
+                try { if (typeof loadSongs === 'function') loadSongs(); } catch (e) {}
+            }
+        }
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchAdminTab(tab.dataset.tab);
+            });
+        });
+
+        function applySiteBranding() {
+            try {
+                const name = (settingsCache && settingsCache.siteName) || 'XuanKen Admin';
+                document.title = name + ' — Admin';
+                const icon = settingsCache && settingsCache.siteIcon;
+                if (icon) {
+                    let link = document.querySelector("link[rel*='icon']");
+                    if (!link) {
+                        link = document.createElement('link');
+                        link.rel = 'icon';
+                        document.head.appendChild(link);
+                    }
+                    link.href = icon;
+                }
+            } catch (e) {}
+        }
+        async function saveSettingsPartial(fields) {
+            try {
+                await db().ref('settings').update(fields);
+                Object.assign(settingsCache, fields);
+                toast('Đã lưu cài đặt');
+                applySiteBranding();
+            } catch (e) {
+                toast('Lỗi lưu: ' + (e.message || e));
+            }
+        }
+        const saveSec = document.getElementById('save-security-btn');
+        if (saveSec) saveSec.onclick = () => saveSettingsPartial({
+            requirePin: !!document.getElementById('set-require-pin').checked,
+            allowRegister: !!document.getElementById('set-allow-register').checked,
+            maxRegistrations: Math.max(0, parseInt(document.getElementById('set-max-registrations').value, 10) || 0),
+            registrationCount: Math.max(0, parseInt(document.getElementById('set-registration-count').value, 10) || 0)
+        });
+        const saveAdminEmailsBtn = document.getElementById('save-admin-emails-btn');
+        if (saveAdminEmailsBtn) saveAdminEmailsBtn.onclick = async () => {
+            const ta = document.getElementById('set-admin-emails');
+            const raw = (ta && ta.value || '').split(/[\n,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+            // Loại email player ảo
+            const list = [];
+            const seen = {};
+            raw.forEach(e => {
+                if (e.endsWith('@xuanken.user')) return;
+                if (!e.includes('@')) return;
+                if (seen[e]) return;
+                seen[e] = true;
+                list.push(e);
+            });
+            try {
+                await db().ref('settings/adminEmails').set(list);
+                toast(list.length ? ('Đã lưu ' + list.length + ' email admin') : 'Đã xóa danh sách (mọi email thật đều vào được Admin)');
+            } catch (e) {
+                toast('Lỗi lưu adminEmails: ' + (e.code || e.message || e));
+            }
+        };
+        const saveFlash = document.getElementById('save-flash-btn');
+        if (saveFlash) saveFlash.onclick = async () => {
+            const fu = document.getElementById('set-flash-until') && document.getElementById('set-flash-until').value;
+            const bc = (document.getElementById('set-broadcast') && document.getElementById('set-broadcast').value || '').trim();
+            const fields = {
+                siteBanner: (document.getElementById('set-site-banner').value || '').trim(),
+                flashSalePercent: Math.max(0, Math.min(90, parseInt(document.getElementById('set-flash-pct').value, 10) || 0)),
+                flashSaleUntil: fu ? new Date(fu).toISOString() : '',
+                inviteReward: Math.max(0, parseInt(document.getElementById('set-invite-reward').value, 10) || 0)
+            };
+            if (bc) {
+                await db().ref('settings/broadcast').set({ msg: bc, at: Date.now() });
+                document.getElementById('set-broadcast').value = '';
+            }
+            await saveSettingsPartial(fields);
+        };
+        const saveBrand = document.getElementById('save-brand-btn');
+        if (saveBrand) saveBrand.onclick = () => {
+            const prefix = (document.getElementById('set-site-prefix').value || '').trim().replace(/^\/+|\/+$/g, '').replace(/[.#$\[\]]/g, '_');
+            saveSettingsPartial({
+                siteName: (document.getElementById('set-site-name').value || '').trim(),
+                siteTitle: (document.getElementById('set-site-title') && document.getElementById('set-site-title').value || '').trim(),
+                siteIcon: (document.getElementById('set-site-icon').value || '').trim(),
+                sitePrefix: prefix
+            });
+        };
+
+        function parsePartnerLinksText(raw) {
+            const lines = String(raw || '').split(/\n+/).map(s => s.trim()).filter(Boolean);
+            const out = [];
+            lines.forEach(line => {
+                const parts = line.split('|').map(s => s.trim()).filter(Boolean);
+                if (parts.length < 2) return;
+                const title = parts[0];
+                const url = parts[1];
+                const icon = parts[2] || '';
+                if (!title || !url) return;
+                out.push({ title, url, icon });
+            });
+            return out;
+        }
+
+        const saveCountdownBtn = document.getElementById('save-countdown-btn');
+        if (saveCountdownBtn) saveCountdownBtn.onclick = async () => {
+            const title = (document.getElementById('set-countdown-title') && document.getElementById('set-countdown-title').value || '').trim();
+            const raw = document.getElementById('set-countdown-at') && document.getElementById('set-countdown-at').value;
+            let at = '';
+            if (raw) {
+                const d = new Date(raw);
+                if (!Number.isNaN(d.getTime())) at = d.toISOString();
+            }
+            if (!at) { toast('Chọn ngày giờ đích'); return; }
+            await saveSettingsPartial({ countdownTitle: title || 'Đếm ngược', countdownAt: at });
+            settingsCache.countdownTitle = title || 'Đếm ngược';
+            settingsCache.countdownAt = at;
+            toast('Đã lưu đếm ngược');
+        };
+        const clearCountdownBtn = document.getElementById('clear-countdown-btn');
+        if (clearCountdownBtn) clearCountdownBtn.onclick = async () => {
+            await saveSettingsPartial({ countdownTitle: '', countdownAt: '' });
+            settingsCache.countdownTitle = '';
+            settingsCache.countdownAt = '';
+            if (document.getElementById('set-countdown-title')) document.getElementById('set-countdown-title').value = '';
+            if (document.getElementById('set-countdown-at')) document.getElementById('set-countdown-at').value = '';
+            toast('Đã xóa đếm ngược');
+        };
+        const saveLinksBtn = document.getElementById('save-links-btn');
+        if (saveLinksBtn) saveLinksBtn.onclick = async () => {
+            const raw = document.getElementById('set-partner-links') && document.getElementById('set-partner-links').value;
+            const list = parsePartnerLinksText(raw);
+            await saveSettingsPartial({ partnerLinks: list });
+            settingsCache.partnerLinks = list;
+            toast(list.length ? ('Đã lưu ' + list.length + ' liên kết') : 'Đã xóa hết liên kết');
+        };
+
+        const saveCloudinaryBtn = document.getElementById('save-cloudinary-btn');
+        if (saveCloudinaryBtn) saveCloudinaryBtn.onclick = async () => {
+            const cloud = (document.getElementById('set-cloudinary-cloud') && document.getElementById('set-cloudinary-cloud').value || '').trim();
+            const preset = (document.getElementById('set-cloudinary-preset') && document.getElementById('set-cloudinary-preset').value || '').trim();
+            const folderDemo = (document.getElementById('set-cloudinary-folder-demo') && document.getElementById('set-cloudinary-folder-demo').value || '').trim() || 'DEMO';
+            const folderMusic = (document.getElementById('set-cloudinary-folder-music') && document.getElementById('set-cloudinary-folder-music').value || '').trim() || 'MUSIC';
+            await saveSettingsPartial({
+                cloudinaryCloud: cloud,
+                cloudinaryPreset: preset,
+                cloudinaryFolderDemo: folderDemo,
+                cloudinaryFolderMusic: folderMusic
+            });
+            settingsCache.cloudinaryCloud = cloud;
+            settingsCache.cloudinaryPreset = preset;
+            settingsCache.cloudinaryFolderDemo = folderDemo;
+            settingsCache.cloudinaryFolderMusic = folderMusic;
+            toast(cloud && preset ? 'Đã lưu Cloudinary' : 'Đã lưu (thiếu cloud name hoặc preset — upload sẽ không chạy)');
+        };
+
+        function resolveCloudinaryFolder(key) {
+            const k = (key || 'DEMO').toUpperCase();
+            if (k === 'MUSIC') {
+                return (settingsCache.cloudinaryFolderMusic || 'MUSIC').trim() || 'MUSIC';
+            }
+            return (settingsCache.cloudinaryFolderDemo || 'DEMO').trim() || 'DEMO';
+        }
+
+        async function uploadToCloudinary(file, statusEl, folderKey) {
+            const cloud = (settingsCache.cloudinaryCloud || '').trim();
+            const preset = (settingsCache.cloudinaryPreset || '').trim();
+            const folder = resolveCloudinaryFolder(folderKey);
+            if (!cloud || !preset) {
+                if (statusEl) {
+                    statusEl.textContent = 'Chưa cấu hình Cloudinary (Cài đặt → Cloudinary)';
+                    statusEl.className = 'upload-hint err';
+                }
+                toast('Vào Cài đặt → Cloudinary nhập Cloud name + Upload preset');
+                return null;
+            }
+            if (!file) return null;
+            if (statusEl) {
+                statusEl.textContent = 'Đang upload → ' + folder + ': ' + file.name + '…';
+                statusEl.className = 'upload-hint loading';
+            }
+            const form = new FormData();
+            form.append('file', file);
+            form.append('upload_preset', preset);
+            if (folder) form.append('folder', folder);
+            try {
+                const res = await fetch('https://api.cloudinary.com/v1_1/' + encodeURIComponent(cloud) + '/auto/upload', {
+                    method: 'POST',
+                    body: form
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    const msg = (data && data.error && data.error.message) || ('HTTP ' + res.status);
+                    throw new Error(msg);
+                }
+                const url = data.secure_url || data.url;
+                if (!url) throw new Error('Không nhận được URL từ Cloudinary');
+                if (statusEl) {
+                    statusEl.textContent = 'OK [' + folder + ']: ' + file.name;
+                    statusEl.className = 'upload-hint ok';
+                }
+                toast('Upload thành công → ' + folder);
+                return url;
+            } catch (e) {
+                console.error('Cloudinary upload', e);
+                if (statusEl) {
+                    statusEl.textContent = 'Lỗi: ' + (e && e.message ? e.message : e);
+                    statusEl.className = 'upload-hint err';
+                }
+                toast('Upload lỗi: ' + (e && e.message ? e.message : e));
+                return null;
+            }
+        }
+
+        function bindCloudinaryUpload(btnId, fileId, inputId, statusId, folderSelectId) {
+            const btn = document.getElementById(btnId);
+            const fileEl = document.getElementById(fileId);
+            const inputEl = document.getElementById(inputId);
+            const statusEl = document.getElementById(statusId);
+            const folderSel = document.getElementById(folderSelectId);
+            if (!btn || !fileEl || !inputEl) return;
+            btn.onclick = () => fileEl.click();
+            fileEl.onchange = async () => {
+                const file = fileEl.files && fileEl.files[0];
+                fileEl.value = '';
+                if (!file) return;
+                const folderKey = folderSel ? folderSel.value : 'DEMO';
+                btn.disabled = true;
+                if (folderSel) folderSel.disabled = true;
+                const url = await uploadToCloudinary(file, statusEl, folderKey);
+                btn.disabled = false;
+                if (folderSel) folderSel.disabled = false;
+                if (url) inputEl.value = url;
+            };
+        }
+        bindCloudinaryUpload('s-audio-upload-btn', 's-audio-file', 's-audio', 's-audio-upload-status', 's-audio-folder');
+        bindCloudinaryUpload('s-audio-full-2-upload-btn', 's-audio-full-2-file', 's-audio-full-2', 's-audio-full-2-upload-status', 's-audio-full-2-folder');
+        bindCloudinaryUpload('s-audio-wav-upload-btn', 's-audio-wav-file', 's-audio-wav', 's-audio-wav-upload-status', 's-audio-wav-folder');
+
+        async function loadGiftCodes() {
+            const el = document.getElementById('gift-list');
+            if (!el) return;
+            try {
+                const snap = await db().ref(dataPath('giftCodes')).once('value');
+                const all = snap.val() || {};
+                const keys = Object.keys(all);
+                if (!keys.length) {
+                    el.innerHTML = '<span class="muted">Chưa có gift code nào</span>';
+                    return;
+                }
+                el.innerHTML = keys.map(code => {
+                    const g = all[code] || {};
+                    const coins = Number(g.coins) || 0;
+                    const maxUses = g.maxUses == null ? 1 : Number(g.maxUses);
+                    const used = Number(g.usedCount) || 0;
+                    const maxLabel = maxUses < 0 ? '∞' : String(maxUses);
+                    const usedBy = g.usedBy ? String(g.usedBy) : '';
+                    const mapCount = (g.usedByMap && typeof g.usedByMap === 'object') ? Object.keys(g.usedByMap).length : 0;
+                    return '<div style="margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 8px;background:var(--card2);border-radius:8px;border:1px solid var(--border);">'
+                        + '<code style="font-weight:700;letter-spacing:0.04em;">' + escapeHtml(code) + '</code>'
+                        + '<span>' + coins + ' XK</span>'
+                        + '<span class="muted">Dùng: ' + used + '/' + maxLabel + (mapCount ? ' (' + mapCount + ' user)' : '') + '</span>'
+                        + (usedBy ? '<span class="muted">Cuối: ' + escapeHtml(usedBy) + '</span>' : '')
+                        + ' <button type="button" class="btn btn-danger" style="padding:2px 8px;font-size:0.65rem;" data-del-gift="' + escapeHtml(code) + '">Xóa</button>'
+                        + '</div>';
+                }).join('');
+                el.querySelectorAll('[data-del-gift]').forEach(btn => {
+                    btn.onclick = async () => {
+                        const code = btn.getAttribute('data-del-gift');
+                        if (!code || !confirm('Xóa gift code "' + code + '"?')) return;
+                        try {
+                            await db().ref(dataPath('giftCodes') + '/' + code).remove();
+                            toast('Đã xóa ' + code);
+                            loadGiftCodes();
+                        } catch (e) {
+                            toast('Lỗi xóa: ' + (e.message || e));
+                        }
+                    };
+                });
+            } catch (e) {
+                el.innerHTML = '<span style="color:#f87171;">Lỗi tải gift codes: ' + escapeHtml(e.message || e) + '</span>';
+            }
+        }
+
+        const giftCreateBtn = document.getElementById('gift-create-btn');
+        if (giftCreateBtn) giftCreateBtn.onclick = async () => {
+            let code = (document.getElementById('gift-new-code') && document.getElementById('gift-new-code').value || '').trim().toUpperCase().replace(/\s+/g, '');
+            code = code.replace(/[.#$\[\]\/]/g, '');
+            const coins = Math.max(1, parseInt(document.getElementById('gift-new-coins') && document.getElementById('gift-new-coins').value, 10) || 50);
+            let maxUses = parseInt(document.getElementById('gift-new-uses') && document.getElementById('gift-new-uses').value, 10);
+            if (isNaN(maxUses)) maxUses = 1;
+            if (maxUses < -1) maxUses = -1;
+            if (!code) {
+                toast('Nhập mã gift code');
+                return;
+            }
+            if (code.length > 24) {
+                toast('Mã tối đa 24 ký tự');
+                return;
+            }
+            try {
+                const ref = db().ref(dataPath('giftCodes') + '/' + code);
+                const existing = await ref.once('value');
+                if (existing.exists()) {
+                    if (!confirm('Mã "' + code + '" đã tồn tại. Ghi đè?')) return;
+                }
+                await ref.set({
+                    coins: coins,
+                    maxUses: maxUses,
+                    usedCount: 0,
+                    usedByMap: {},
+                    createdAt: Date.now()
+                });
+                toast('Đã tạo gift code ' + code + ' (+' + coins + ' XK, ' + (maxUses < 0 ? '∞' : maxUses) + ' lần)');
+                if (document.getElementById('gift-new-code')) document.getElementById('gift-new-code').value = '';
+                loadGiftCodes();
+            } catch (e) {
+                const msg = String(e.code || e.message || e);
+                if (/PERMISSION|permission/i.test(msg)) {
+                    toast('Rules chặn ghi giftCodes — kiểm tra Firebase Rules & đăng nhập admin');
+                } else {
+                    toast('Lỗi tạo: ' + msg);
+                }
+            }
+        };
+
+        async function loadThumbAdmin() {
+            const el = document.getElementById('thumb-admin-list');
+            if (!el) return;
+            try {
+                const snap = await db().ref('settings/progressThumbs').once('value');
+                const arr = snap.val();
+                const list = Array.isArray(arr) ? arr : (arr && typeof arr === 'object' ? Object.values(arr) : []);
+                if (!list.length) { el.textContent = 'Chưa có thumb'; return; }
+                el.innerHTML = list.map((th, i) => {
+                    const url = th.url ? String(th.url) : '';
+                    const isGif = /\.gif(\?|$)/i.test(url) || /\.webp(\?|$)/i.test(url);
+                    let preview = '';
+                    if (url) {
+                        if (isGif) {
+                            preview = '<button type="button" class="admin-thumb-preview is-gif" data-thumb-src="' + escapeHtml(url) + '" title="Bấm xem GIF" style="width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--card2);cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;color:var(--muted);">GIF</button>';
+                        } else {
+                            preview = '<img src="' + escapeHtml(url) + '" loading="lazy" style="width:36px;height:36px;object-fit:contain;border-radius:8px;">';
+                        }
+                    }
+                    return '<div style="margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+                        preview +
+                        '<code>' + escapeHtml(th.id || '') + '</code> ' + escapeHtml(th.name || '') + ' · ' + (th.price|0) + ' XK' +
+                        ' <button type="button" class="btn btn-danger" style="padding:2px 8px;font-size:0.65rem;" data-del-thumb="' + i + '">Xóa</button></div>';
+                }).join('');
+                el.querySelectorAll('.admin-thumb-preview[data-thumb-src]').forEach(btn => {
+                    btn.onclick = () => {
+                        if (btn.dataset.loaded === '1') return;
+                        const src = btn.getAttribute('data-thumb-src');
+                        if (!src) return;
+                        btn.dataset.loaded = '1';
+                        btn.innerHTML = '<img src="' + src.replace(/"/g, '&quot;') + '" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">';
+                    };
+                });
+                el.querySelectorAll('[data-del-thumb]').forEach(btn => {
+                    btn.onclick = async () => {
+                        const idx = parseInt(btn.getAttribute('data-del-thumb'), 10);
+                        const snap = await db().ref('settings/progressThumbs').once('value');
+                        let list = snap.val() || [];
+                        if (!Array.isArray(list)) list = Object.values(list);
+                        list.splice(idx, 1);
+                        await db().ref('settings/progressThumbs').set(list);
+                        toast('Đã xóa thumb');
+                        loadThumbAdmin();
+                    };
+                });
+            } catch (e) { el.textContent = 'Lỗi tải thumbs'; }
+        }
+        const thumbAdd = document.getElementById('thumb-add-btn');
+        if (thumbAdd) thumbAdd.onclick = async () => {
+            const id = (document.getElementById('thumb-new-id').value || '').trim().replace(/[.#$\[\]\/]/g, '_');
+            const name = (document.getElementById('thumb-new-name').value || '').trim() || id;
+            const url = (document.getElementById('thumb-new-url').value || '').trim();
+            const price = Math.max(0, parseInt(document.getElementById('thumb-new-price').value, 10) || 0);
+            if (!id || !url) { toast('Cần ID và URL'); return; }
+            const snap = await db().ref('settings/progressThumbs').once('value');
+            let list = snap.val() || [];
+            if (!Array.isArray(list)) list = Object.values(list);
+            list = list.filter(x => x && x.id !== id);
+            list.push({ id, name, url, price });
+            await db().ref('settings/progressThumbs').set(list);
+            toast('Đã thêm thumb ' + id);
+            document.getElementById('thumb-new-id').value = '';
+            document.getElementById('thumb-new-url').value = '';
+            loadThumbAdmin();
+        };
+
+        async function adminSetPlayerPin(username, newPin) {
+            const name = String(username || '').trim();
+            if (!name || !/^[0-9]{6}$/.test(newPin)) throw new Error('PIN không hợp lệ');
+            const u = usersCache[name];
+            const uid = u && (u.uid || u.key);
+            if (!uid) throw new Error('Không tìm thấy uid');
+            const emailSafe = sanitizeKey(name).toLowerCase() + '@xuanken.user';
+            const cfg = window.FIREBASE_CONFIG || {};
+            const apiKey = cfg.apiKey;
+            if (!apiKey) throw new Error('Thiếu API key');
+            await db().ref(dataPath('users') + '/' + uid).update({ loginPin: newPin, loginPinAt: Date.now() });
+            let apiOk = false;
+            try {
+                const res = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key=' + encodeURIComponent(apiKey), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ localId: uid, password: newPin })
+                });
+                const data = await res.json();
+                if (!data.error) apiOk = true;
+            } catch (e) {}
+            try {
+                const res2 = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:update?key=' + encodeURIComponent(apiKey), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ localId: uid, password: newPin, returnSecureToken: false })
+                });
+                const data2 = await res2.json();
+                if (!data2.error) apiOk = true;
+            } catch (e) {}
+            if (!apiOk) {
+                console.warn('Auth API không đổi được password — đã lưu loginPin trên DB');
+            }
+            return true;
+        }
+
+        function applyAdminTheme(theme) {
+            const t = theme === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            try { localStorage.setItem('xuanken_admin_theme', t); } catch (e) {}
+            const icon = document.getElementById('admin-theme-icon');
+            const label = document.getElementById('admin-theme-label');
+            if (icon) {
+                icon.className = t === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+            if (label) label.textContent = t === 'light' ? 'Light' : 'Dark';
+        }
+        (function initAdminTheme() {
+            let t = 'dark';
+            try { t = localStorage.getItem('xuanken_admin_theme') || 'dark'; } catch (e) {}
+            applyAdminTheme(t);
+            document.addEventListener('DOMContentLoaded', () => {});
+            const btn = document.getElementById('admin-theme-btn');
+            if (btn) {
+                btn.onclick = () => {
+                    const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                    applyAdminTheme(cur === 'dark' ? 'light' : 'dark');
+                };
+            }
+        })();
+
+        function showLogin() {
+            const login = document.getElementById('login-screen');
+            const app = document.getElementById('admin-app');
+            if (login) login.style.display = '';
+            if (app) app.style.display = 'none';
+        }
+
+        function adminAccessErrorMessage(code) {
+            const c = String(code || '');
+            if (c === 'not-admin-email' || c === 'player-email') {
+                return 'Email này không được phép vào Admin (chỉ email admin thật).';
+            }
+            if (c === 'no-email') return 'Tài khoản không có email hợp lệ.';
+            if (c === 'not-in-allowlist') {
+                return 'Email chưa nằm trong danh sách admin (settings/adminEmails).';
+            }
+            return c || 'Không có quyền Admin.';
+        }
+
+        async function assertAdminAccess(user) {
+            if (!user) throw new Error('no-email');
+            const email = String(user.email || '').trim().toLowerCase();
+            if (!email || !email.includes('@')) throw new Error('no-email');
+            if (email.endsWith('@xuanken.user')) throw new Error('player-email');
+
+            try {
+                const snap = await db().ref('settings/adminEmails').once('value');
+                const val = snap.val();
+                let list = [];
+                if (Array.isArray(val)) list = val;
+                else if (val && typeof val === 'object') list = Object.keys(val);
+                list = list.map(x => String(x || '').trim().toLowerCase()).filter(Boolean);
+                if (list.length > 0 && list.indexOf(email) === -1) {
+                    throw new Error('not-in-allowlist');
+                }
+            } catch (e) {
+                if (e && (e.message === 'not-in-allowlist' || e.message === 'player-email' || e.message === 'no-email')) {
+                    throw e;
+                }
+                console.warn('assertAdminAccess allowlist check:', e && (e.code || e.message));
+            }
+            return true;
+        }
+
+        let _adminBootstrapped = false;
+        async function bootstrapAdminData() {
+            if (_adminBootstrapped) return;
+            _adminBootstrapped = true;
+            try {
+                await loadSettings();
+            } catch (e) { console.warn('loadSettings', e); }
+            try {
+                await loadSongs();
+            } catch (e) { console.warn('loadSongs', e); }
+            try {
+                await loadUsers();
+            } catch (e) { console.warn('loadUsers', e); }
+            try {
+                const auth = getAdminAuth();
+                const u = auth && auth.currentUser;
+                const el = document.getElementById('admin-identity-email');
+                if (el && u) el.textContent = u.email || '';
+            } catch (e) {}
+        }
+
+        async function showApp() {
+            const login = document.getElementById('login-screen');
+            const app = document.getElementById('admin-app');
+            if (login) login.style.display = 'none';
+            if (app) app.style.display = '';
+            await bootstrapAdminData();
+        }
+
+        function setLoginError(msg) {
+            const errEl = document.getElementById('login-error');
+            if (!errEl) return;
+            if (msg) {
+                errEl.textContent = msg;
+                errEl.style.display = 'block';
+            } else {
+                errEl.style.display = 'none';
+            }
+        }
+
+        function firebaseAuthErrorMessage(err) {
+            const code = (err && err.code) || '';
+            if (code === 'auth/invalid-email') return 'Email không hợp lệ.';
+            if (code === 'auth/user-disabled') return 'Tài khoản đã bị vô hiệu hóa.';
+            if (code === 'auth/user-not-found') return 'Không tìm thấy tài khoản với email này.';
+            if (code === 'auth/wrong-password') return 'Mật khẩu không đúng.';
+            if (code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') {
+                return 'Email hoặc mật khẩu không đúng.';
+            }
+            if (code === 'auth/too-many-requests') return 'Thử quá nhiều lần. Đợi một lúc rồi thử lại.';
+            if (code === 'auth/network-request-failed') return 'Lỗi mạng — kiểm tra kết nối.';
+            return (err && err.message) || 'Đăng nhập thất bại.';
+        }
+
+        async function doAdminLogin() {
+            const emailEl = document.getElementById('admin-email');
+            const passEl = document.getElementById('admin-pass');
+            const btn = document.getElementById('admin-login-btn');
+            const email = (emailEl && emailEl.value || '').trim();
+            const pass = (passEl && passEl.value || '');
+            setLoginError('');
+            if (!email || !pass) {
+                setLoginError('Nhập đầy đủ email và mật khẩu.');
+                return;
+            }
+            if (email.toLowerCase().endsWith('@xuanken.user')) {
+                setLoginError('Đây là tài khoản player — dùng email admin Firebase (Gmail thật).');
+                return;
+            }
+            const auth = getAdminAuth();
+            if (!auth) {
+                setLoginError('Firebase Auth chưa khởi tạo được. Tải lại trang.');
+                return;
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng nhập...';
+            }
+            try {
+                await auth.signInWithEmailAndPassword(email, pass);
+            } catch (err) {
+                console.warn('Admin login error:', err);
+                setLoginError(firebaseAuthErrorMessage(err));
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Đăng nhập';
+                }
+            }
+        }
+
+        (function bindAdminLoginUi() {
+            const btn = document.getElementById('admin-login-btn');
+            if (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    doAdminLogin();
+                });
+            }
+            const passEl = document.getElementById('admin-pass');
+            if (passEl) {
+                passEl.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        doAdminLogin();
+                    }
+                });
+            }
+            const emailEl = document.getElementById('admin-email');
+            if (emailEl) {
+                emailEl.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const p = document.getElementById('admin-pass');
+                        if (p) p.focus();
+                    }
+                });
+            }
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function () {
+                    _adminBootstrapped = false;
+                    const auth = getAdminAuth();
+                    try {
+                        if (auth) await auth.signOut();
+                    } catch (e) {
+                        console.warn('logout', e);
+                    }
+                    showLogin();
+                    setLoginError('');
+                });
+            }
+        })();
+
+        (function bindAdminAuth() {
+            const auth = getAdminAuth();
+            if (!auth) {
+                console.error('Admin Auth không khởi tạo được');
+                showLogin();
+                setLoginError('Firebase Auth chưa sẵn sàng. Kiểm tra firebase-config.js và tải lại trang.');
+                return;
+            }
+            try {
+                if (firebase.auth.Auth && firebase.auth.Auth.Persistence) {
+                    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {});
+                }
+            } catch (e) {}
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    _adminBootstrapped = false;
+                    showLogin();
+                    return;
+                }
+                try {
+                    await assertAdminAccess(user);
+                    await showApp();
+                } catch (e) {
+                    console.warn('Admin access denied:', e && e.message);
+                    try { await auth.signOut(); } catch (x) {}
+                    showLogin();
+                    setLoginError(adminAccessErrorMessage((e && e.message) || ''));
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

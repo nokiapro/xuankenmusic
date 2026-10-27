@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Xóa localStorage — XuanKen Music</title>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0b12; color: #eee; padding: 24px;
+    }
+    .box {
+      max-width: 440px; width: 100%; background: #161622; border: 1px solid rgba(255,68,68,0.35);
+      border-radius: 16px; padding: 28px 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.25rem; color: #ff6b6b; }
+    p { margin: 0 0 14px; font-size: 0.9rem; line-height: 1.5; color: #aaa; }
+    button {
+      width: 100%; border: none; border-radius: 10px; padding: 14px 16px; font-size: 1rem;
+      font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #ff0040, #8c00ff);
+      color: #fff; margin-top: 8px;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #ccc; margin-top: 10px;
+    }
+    pre {
+      margin-top: 16px; font-size: 0.75rem; background: #0b0b12; border-radius: 8px;
+      padding: 12px; max-height: 220px; overflow: auto; white-space: pre-wrap; display: none;
+      color: #9f9;
+    }
+    .ok { color: #4ade80; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Xóa cache local (PC / Mobile)</h1>
+    <p>
+      Xóa <strong>localStorage</strong> + đăng xuất Firebase Auth trên trình duyệt này.
+      Dùng khi PC bị <em>lẫn UID / username</em> (ẩn danh thì OK, trình duyệt thường thì lệch).
+    </p>
+    <p style="color:#ff9800;font-size:0.82rem;">
+      Sau khi xóa: mở lại trang chủ → đăng nhập username + PIN một lần.
+    </p>
+    <button id="clear-btn" type="button">XÓA CACHE + ĐĂNG XUẤT</button>
+    <button id="back-btn" class="btn-secondary" type="button">Về trang chủ</button>
+    <pre id="log"></pre>
+  </div>
+  <script>
+    (function () {
+      var btn = document.getElementById('clear-btn');
+      var logEl = document.getElementById('log');
+      var back = document.getElementById('back-btn');
+      back.onclick = function () { location.href = 'index.html'; };
+
+      btn.onclick = async function () {
+        if (!confirm('Xóa localStorage + đăng xuất Auth trên máy này?')) return;
+        var keys = [];
+        try {
+          for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+        } catch (e) {}
+        var removed = [];
+        keys.forEach(function (k) {
+          if (!k) return;
+          try { localStorage.removeItem(k); removed.push(k); } catch (e) {}
+        });
+        try { sessionStorage.clear(); } catch (e) {}
+        var authMsg = '';
+        try {
+          if (typeof firebase !== 'undefined' && firebase.auth) {
+            await firebase.auth().signOut();
+            authMsg = '\n✓ Đã signOut Firebase Auth';
+          } else {
+            authMsg = '\n· Firebase Auth chưa load (vẫn đã xóa localStorage)';
+          }
+        } catch (e) {
+          authMsg = '\n· signOut lỗi: ' + (e.message || e);
+        }
+        logEl.style.display = 'block';
+        logEl.innerHTML = '<span class="ok">Đã xóa ' + removed.length + ' key localStorage</span>' + authMsg
+          + '\n\n<span class="ok">Xong. Mở trang chủ → đăng nhập lại username + PIN.</span>';
+        btn.disabled = true;
+        btn.textContent = 'Đã xóa xong';
+      };
+    })();
+  </script>
+</body>
+</html>
